@@ -16,14 +16,14 @@ class CFG:
 
     # build
     embedding_dim = 64  # int
-    num_layers = 2  # int
+    num_layers = 1  # int
     alpha = None  # Optional[Union[float, Tensor]]
     build_kwargs = {}  # other arguments
     weight = "./weight/best_model.pt"
 
     # train
-    n_epoch = 100
-    learning_rate = 0.01
+    n_epoch = 500
+    learning_rate = 0.001
     weight_basepath = "./weight"
 
 

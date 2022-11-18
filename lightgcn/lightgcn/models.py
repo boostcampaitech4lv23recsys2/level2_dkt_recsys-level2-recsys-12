@@ -35,8 +35,8 @@ def train(
 
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     # wca(optimizer, T_0=150, T_mult=1, eta_max=0.1, T_up=0, gamma=1., last_epoch=-1)
-    # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, 100, eta_min=0.001, last_epoch=- 1, verbose=False)
-    scheduler = wca(optimizer, T_0=50, T_mult=2, eta_max=0.01,  T_up=10, gamma=0.5)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, 100, eta_min=0.001, last_epoch=- 1, verbose=False)
+    # scheduler = wca(optimizer, T_0=50, T_mult=2, eta_max=0.01,  T_up=10, gamma=0.5)
 
     if not os.path.exists(weight):
         os.makedirs(weight)
