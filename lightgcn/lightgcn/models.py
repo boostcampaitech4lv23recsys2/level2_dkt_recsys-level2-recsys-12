@@ -4,6 +4,7 @@ import numpy as np
 import torch
 from sklearn.metrics import accuracy_score, roc_auc_score
 from torch_geometric.nn.models import LightGCN
+from custom_scheduler import CosineAnnealingWarmUpRestarts as wca
 
 
 def build(n_node, weight=None, logger=None, **kwargs):
@@ -33,6 +34,9 @@ def train(
     model.train()
 
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+    # wca(optimizer, T_0=150, T_mult=1, eta_max=0.1, T_up=0, gamma=1., last_epoch=-1)
+    # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, 100, eta_min=0.001, last_epoch=- 1, verbose=False)
+    scheduler = wca(optimizer, T_0=50, T_mult=2, eta_max=0.01,  T_up=10, gamma=0.5)
 
     if not os.path.exists(weight):
         os.makedirs(weight)
@@ -79,6 +83,7 @@ def train(
                     {"model": model.state_dict(), "epoch": e + 1},
                     os.path.join(weight, f"best_model.pt"),
                 )
+        scheduler.step()
     torch.save(
         {"model": model.state_dict(), "epoch": e + 1},
         os.path.join(weight, f"last_model.pt"),

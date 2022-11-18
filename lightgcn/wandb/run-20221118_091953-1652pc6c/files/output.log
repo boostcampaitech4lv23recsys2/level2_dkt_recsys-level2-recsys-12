@@ -1,0 +1,26 @@
+cuda
+2022-11-18 09:19:58,816 - root - INFO - Task Started
+2022-11-18 09:19:58,816 - root - INFO - [1/1] Data Preparing - Start
+2022-11-18 09:20:11,098 - data - INFO - Train Dataset Info
+2022-11-18 09:20:11,099 - data - INFO -  * Num. Users    : 7442
+2022-11-18 09:20:11,099 - data - INFO -  * Max. UserID   : 7441
+2022-11-18 09:20:11,099 - data - INFO -  * Num. Items    : 9454
+2022-11-18 09:20:11,099 - data - INFO -  * Num. Records  : 2475962
+2022-11-18 09:20:11,100 - data - INFO - Test Dataset Info
+2022-11-18 09:20:11,100 - data - INFO -  * Num. Users    : 744
+2022-11-18 09:20:11,100 - data - INFO -  * Max. UserID   : 7439
+2022-11-18 09:20:11,100 - data - INFO -  * Num. Items    : 444
+2022-11-18 09:20:11,101 - data - INFO -  * Num. Records  : 744
+2022-11-18 09:20:11,196 - root - INFO - [1/1] Data Preparing - Done
+2022-11-18 09:20:11,197 - root - INFO - [2/2] Model Building - Start
+2022-11-18 09:20:11,214 - build - INFO - No load model
+2022-11-18 09:20:11,216 - root - INFO - [2/2] Model Building - Done
+2022-11-18 09:20:11,217 - root - INFO - [3/3] Model Training - Start
+Traceback (most recent call last):
+  File "/opt/ml/input/code/lightgcn/train.py", line 61, in <module>
+    main()
+  File "/opt/ml/input/code/lightgcn/train.py", line 46, in main
+    train(
+  File "/opt/ml/input/code/lightgcn/lightgcn/models.py", line 39, in train
+    scheduler = CosineAnnealingWarmUpRestarts(optimizer, T_0=150, T_mult=1, eta_max=0.1,  T_up=10, gamma=0.5)
+NameError: name 'CosineAnnealingWarmUpRestarts' is not defined

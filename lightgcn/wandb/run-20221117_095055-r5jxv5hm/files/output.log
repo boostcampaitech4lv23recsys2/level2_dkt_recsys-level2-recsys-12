@@ -1,0 +1,62 @@
+cuda
+2022-11-17 09:51:01,049 - root - INFO - Task Started
+2022-11-17 09:51:01,050 - root - INFO - [1/1] Data Preparing - Start
+2022-11-17 09:51:12,931 - data - INFO - Train Dataset Info
+2022-11-17 09:51:12,931 - data - INFO -  * Num. Users    : 7442
+2022-11-17 09:51:12,932 - data - INFO -  * Max. UserID   : 7441
+2022-11-17 09:51:12,932 - data - INFO -  * Num. Items    : 9454
+2022-11-17 09:51:12,932 - data - INFO -  * Num. Records  : 2475962
+2022-11-17 09:51:12,933 - data - INFO - Test Dataset Info
+2022-11-17 09:51:12,933 - data - INFO -  * Num. Users    : 744
+2022-11-17 09:51:12,933 - data - INFO -  * Max. UserID   : 7439
+2022-11-17 09:51:12,933 - data - INFO -  * Num. Items    : 444
+2022-11-17 09:51:12,933 - data - INFO -  * Num. Records  : 744
+2022-11-17 09:51:13,022 - root - INFO - [1/1] Data Preparing - Done
+2022-11-17 09:51:13,022 - root - INFO - [2/2] Model Building - Start
+2022-11-17 09:51:13,040 - build - INFO - No load model
+2022-11-17 09:51:13,043 - root - INFO - [2/2] Model Building - Done
+2022-11-17 09:51:13,043 - root - INFO - [3/3] Model Training - Start
+2022-11-17 09:51:13,195 - train - INFO - Training Started : n_epoch=20
+2022-11-17 09:51:13,230 - train - INFO -  * In epoch 0001, loss=0.693, acc=0.501, AUC=0.509
+2022-11-17 09:51:13,231 - train - INFO -  * In epoch 0001, loss=0.693, acc=0.501, AUC=0.509, Best AUC
+2022-11-17 09:51:13,281 - train - INFO -  * In epoch 0002, loss=0.693, acc=0.514, AUC=0.528
+2022-11-17 09:51:13,281 - train - INFO -  * In epoch 0002, loss=0.693, acc=0.514, AUC=0.528, Best AUC
+2022-11-17 09:51:13,334 - train - INFO -  * In epoch 0003, loss=0.693, acc=0.522, AUC=0.547
+2022-11-17 09:51:13,335 - train - INFO -  * In epoch 0003, loss=0.693, acc=0.522, AUC=0.547, Best AUC
+2022-11-17 09:51:13,384 - train - INFO -  * In epoch 0004, loss=0.693, acc=0.540, AUC=0.566
+2022-11-17 09:51:13,385 - train - INFO -  * In epoch 0004, loss=0.693, acc=0.540, AUC=0.566, Best AUC
+2022-11-17 09:51:13,435 - train - INFO -  * In epoch 0005, loss=0.693, acc=0.554, AUC=0.586
+2022-11-17 09:51:13,435 - train - INFO -  * In epoch 0005, loss=0.693, acc=0.554, AUC=0.586, Best AUC
+2022-11-17 09:51:13,485 - train - INFO -  * In epoch 0006, loss=0.693, acc=0.576, AUC=0.606
+2022-11-17 09:51:13,486 - train - INFO -  * In epoch 0006, loss=0.693, acc=0.576, AUC=0.606, Best AUC
+2022-11-17 09:51:13,535 - train - INFO -  * In epoch 0007, loss=0.693, acc=0.599, AUC=0.627
+2022-11-17 09:51:13,535 - train - INFO -  * In epoch 0007, loss=0.693, acc=0.599, AUC=0.627, Best AUC
+2022-11-17 09:51:13,588 - train - INFO -  * In epoch 0008, loss=0.693, acc=0.611, AUC=0.648
+2022-11-17 09:51:13,589 - train - INFO -  * In epoch 0008, loss=0.693, acc=0.611, AUC=0.648, Best AUC
+2022-11-17 09:51:13,639 - train - INFO -  * In epoch 0009, loss=0.693, acc=0.631, AUC=0.669
+2022-11-17 09:51:13,640 - train - INFO -  * In epoch 0009, loss=0.693, acc=0.631, AUC=0.669, Best AUC
+2022-11-17 09:51:13,688 - train - INFO -  * In epoch 0010, loss=0.693, acc=0.643, AUC=0.690
+2022-11-17 09:51:13,689 - train - INFO -  * In epoch 0010, loss=0.693, acc=0.643, AUC=0.690, Best AUC
+2022-11-17 09:51:13,736 - train - INFO -  * In epoch 0011, loss=0.693, acc=0.650, AUC=0.710
+2022-11-17 09:51:13,737 - train - INFO -  * In epoch 0011, loss=0.693, acc=0.650, AUC=0.710, Best AUC
+2022-11-17 09:51:13,785 - train - INFO -  * In epoch 0012, loss=0.693, acc=0.670, AUC=0.728
+2022-11-17 09:51:13,786 - train - INFO -  * In epoch 0012, loss=0.693, acc=0.670, AUC=0.728, Best AUC
+2022-11-17 09:51:13,834 - train - INFO -  * In epoch 0013, loss=0.693, acc=0.689, AUC=0.745
+2022-11-17 09:51:13,835 - train - INFO -  * In epoch 0013, loss=0.693, acc=0.689, AUC=0.745, Best AUC
+2022-11-17 09:51:13,881 - train - INFO -  * In epoch 0014, loss=0.693, acc=0.708, AUC=0.761
+2022-11-17 09:51:13,882 - train - INFO -  * In epoch 0014, loss=0.693, acc=0.708, AUC=0.761, Best AUC
+2022-11-17 09:51:13,928 - train - INFO -  * In epoch 0015, loss=0.693, acc=0.721, AUC=0.773
+2022-11-17 09:51:13,929 - train - INFO -  * In epoch 0015, loss=0.693, acc=0.721, AUC=0.773, Best AUC
+2022-11-17 09:51:13,975 - train - INFO -  * In epoch 0016, loss=0.693, acc=0.729, AUC=0.784
+2022-11-17 09:51:13,976 - train - INFO -  * In epoch 0016, loss=0.693, acc=0.729, AUC=0.784, Best AUC
+2022-11-17 09:51:14,022 - train - INFO -  * In epoch 0017, loss=0.693, acc=0.735, AUC=0.792
+2022-11-17 09:51:14,023 - train - INFO -  * In epoch 0017, loss=0.693, acc=0.735, AUC=0.792, Best AUC
+2022-11-17 09:51:14,068 - train - INFO -  * In epoch 0018, loss=0.693, acc=0.748, AUC=0.797
+2022-11-17 09:51:14,069 - train - INFO -  * In epoch 0018, loss=0.693, acc=0.748, AUC=0.797, Best AUC
+2022-11-17 09:51:14,115 - train - INFO -  * In epoch 0019, loss=0.693, acc=0.758, AUC=0.801
+2022-11-17 09:51:14,116 - train - INFO -  * In epoch 0019, loss=0.693, acc=0.758, AUC=0.801, Best AUC
+2022-11-17 09:51:14,164 - train - INFO -  * In epoch 0020, loss=0.693, acc=0.763, AUC=0.803
+2022-11-17 09:51:14,165 - train - INFO -  * In epoch 0020, loss=0.693, acc=0.763, AUC=0.803, Best AUC
+2022-11-17 09:51:14,195 - train - INFO - Best Weight Confirmed : 20'th epoch
+2022-11-17 09:51:14,196 - root - INFO - [3/3] Model Training - Done
+2022-11-17 09:51:14,196 - root - INFO - Task Complete
