@@ -26,7 +26,7 @@ def train(
     train_data,
     valid_data=None,
     n_epoch=100,
-    learning_rate=0.01,
+    learning_rate=0.001,
     use_wandb=False,
     weight=None,
     logger=None,
@@ -35,8 +35,8 @@ def train(
 
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     # wca(optimizer, T_0=150, T_mult=1, eta_max=0.1, T_up=0, gamma=1., last_epoch=-1)
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, 100, eta_min=0.001, last_epoch=- 1, verbose=False)
-    # scheduler = wca(optimizer, T_0=50, T_mult=2, eta_max=0.01,  T_up=10, gamma=0.5)
+    # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, 100, eta_min=0.001, last_epoch=- 1, verbose=False)
+    scheduler = wca(optimizer, T_0=50, T_mult=2, eta_max=0.005,  T_up=5, gamma=0.5)
 
     if not os.path.exists(weight):
         os.makedirs(weight)
@@ -63,8 +63,8 @@ def train(
         with torch.no_grad():
             prob = model.predict_link(valid_data["edge"], prob=True)
             prob = prob.detach().cpu().numpy()
-            acc = accuracy_score(valid_data["label"], prob > 0.5)
-            auc = roc_auc_score(valid_data["label"], prob)
+            acc = accuracy_score(valid_data["label"].cpu(), prob > 0.5)
+            auc = roc_auc_score(valid_data["label"].cpu(), prob)
             logger.info(
                 f" * In epoch {(e+1):04}, loss={loss:.03f}, acc={acc:.03f}, AUC={auc:.03f}"
             )

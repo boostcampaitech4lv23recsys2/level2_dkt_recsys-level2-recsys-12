@@ -1,0 +1,23 @@
+cuda
+2022-11-19 07:38:45,204 - root - INFO - Task Started
+2022-11-19 07:38:45,204 - root - INFO - [1/1] Data Preparing - Start
+Traceback (most recent call last):
+  File "/opt/ml/input/code/lightgcn/train.py", line 63, in <module>
+    main()
+  File "/opt/ml/input/code/lightgcn/train.py", line 25, in main
+    train_data, valid_data, test_data, n_node = prepare_dataset(
+  File "/opt/ml/input/code/lightgcn/lightgcn/datasets.py", line 17, in prepare_dataset
+    x_train, x_valid, y_train, y_valid = train_test_split(train_data_proc, train_data_proc.values(), test_size=0.2, random_state=42)
+  File "/opt/conda/envs/lgcn/lib/python3.10/site-packages/sklearn/model_selection/_split.py", line 2445, in train_test_split
+    arrays = indexable(*arrays)
+  File "/opt/conda/envs/lgcn/lib/python3.10/site-packages/sklearn/utils/validation.py", line 433, in indexable
+    check_consistent_length(*result)
+  File "/opt/conda/envs/lgcn/lib/python3.10/site-packages/sklearn/utils/validation.py", line 384, in check_consistent_length
+    lengths = [_num_samples(X) for X in arrays if X is not None]
+  File "/opt/conda/envs/lgcn/lib/python3.10/site-packages/sklearn/utils/validation.py", line 384, in <listcomp>
+    lengths = [_num_samples(X) for X in arrays if X is not None]
+  File "/opt/conda/envs/lgcn/lib/python3.10/site-packages/sklearn/utils/validation.py", line 325, in _num_samples
+    raise TypeError(
+TypeError: Singleton array array(dict_values([tensor([[    0,     0,     0,  ...,  7439,  7439,  7439],
+        [12796, 12797, 12798,  ..., 11170, 11171, 11172]], device='cuda:0'), tensor([1, 1, 1,  ..., 0, 1, 1], device='cuda:0')]),
+      dtype=object) cannot be considered a valid collection.
