@@ -1,4 +1,0 @@
-name: dkt
-channels:
-  - defaults
-prefix: /opt/conda/envs/dkt
