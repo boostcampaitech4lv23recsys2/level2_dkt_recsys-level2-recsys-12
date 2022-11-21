@@ -4,7 +4,9 @@ import pandas as pd
 import torch
 from sklearn.model_selection import train_test_split
 
+from feature_engineering import get_answer_rate
 
+# code/feature_engineering.py
 def prepare_dataset(device, basepath, verbose=True, logger=None, isTrain=False):
     if isTrain:
         data = load_data(basepath)
@@ -35,7 +37,8 @@ def load_data(basepath):
     path2 = os.path.join(basepath, "test_data.csv")
     data1 = pd.read_csv(path1)
     data2 = pd.read_csv(path2)
-
+    data1 = get_answer_rate(data1)
+    data2 = get_answer_rate(data2)
     data = pd.concat([data1, data2])
     data.drop_duplicates(
         subset=["userID", "assessmentItemID"], keep="last", inplace=True

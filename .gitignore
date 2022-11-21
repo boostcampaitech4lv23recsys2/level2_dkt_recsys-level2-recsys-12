@@ -1,0 +1,16 @@
+/wandb/
+*.swp
+.python-version
+wandb
+wandb-debug.log
+__pycache__
+.ipynb_checkpoints
+.DS_Store
+logs
+summary*
+run*
+colabs/dataset/*
+colabs/train_data/*
+colabs/output/*
+log.txt
+colabs/log.txt
