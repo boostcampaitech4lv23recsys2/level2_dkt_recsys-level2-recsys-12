@@ -1,5 +1,12 @@
 # ====================================================
 # CFG
+# learning_rate=0.005,
+# eval_epoch=1,
+# top_k=10,
+# save_model=False,
+# epochs=30,
+# save_epoch=1
+
 # ====================================================
 class CFG:
     use_cuda_if_available = True
@@ -14,19 +21,26 @@ class CFG:
     pred_file = "submission.csv"
 
     # build
-    embedding_dim = 32  # int
-    num_layers = 2  # int
+    embedding_dim = 64  # int
+    num_layers = 3  # int
     alpha = None  # Optional[Union[float, Tensor]]
-    build_kwargs = {}  # other arguments
+    build_kwargs = {
+        "top_k":10,
+
+    }  # other arguments
     weight = "./weight/best_model.pt"
 
     # train
     n_epoch = 300
-    learning_rate = 0.01
+    learning_rate = 0.005
     weight_basepath = "./weight"
 
     
-    wandb_kwargs = dict(project="DKT_LGCN", entity="ai-tech-4-recsys-12", name=f"EMB_DIM{embedding_dim},LR{learning_rate}")
+    wandb_kwargs = dict(
+        project="DKT_LGCN", 
+        entity="ai-tech-4-recsys-12", 
+        name=f"TH_EMB_DIM{embedding_dim},LAYER{num_layers},LR{learning_rate}"
+        )
 
 logging_conf = {  # only used when 'user_wandb==False'
     "version": 1,

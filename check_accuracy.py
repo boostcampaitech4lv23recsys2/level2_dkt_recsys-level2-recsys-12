@@ -1,25 +1,14 @@
 import pandas as pd
-import numpy as np
-standard_threshold=0.4
-submission_result = pd.read_csv("lightgcn/output/submission.csv")
-answer = pd.read_csv("custom_answer.csv")
+from sklearn.metrics import accuracy_score, roc_auc_score
 
-def get_acc(threshold):
-    result_for_accuracy = submission_result['prediction'].apply(lambda x: 0 if x < threshold else 1)
-    true_values=np.array([answer['prediction'].values])
-    predictions=np.array([result_for_accuracy.values])
-    N = true_values.shape[1]
-    accuracy = (true_values == predictions).sum() / N
-    # print((true_values == predictions).sum(),N)
-    # TP = ((predictions == 1) & (true_values == 1)).sum()
-    # FP = ((predictions == 1) & (true_values == 0)).sum()
-    # precision = TP / (TP+FP)
-    return accuracy
-auroc = max_val = 0
-for i in submission_result['prediction']:
-    acc = get_acc(i)
-    if auroc < acc:
-        auroc = acc
-        max_val = i
-print(f'auroc : {auroc} in {max_val}')
-print(f'acc : {get_acc(standard_threshold)} in {standard_threshold}')
+threshold=0.5
+PRED_PATH = "lightgcn/output/submission.csv"
+ANSWER_PATH = "custom_answer.csv"
+
+submission_result = pd.read_csv(PRED_PATH)
+answer = pd.read_csv(ANSWER_PATH)
+
+y_pred, y = submission_result["prediction"], answer["prediction"]
+
+print(f"accuracy_score: {accuracy_score(y,y_pred.apply(lambda x: 1 if x > threshold else 0))}")
+print(f"roc  auc_score: {roc_auc_score(y,y_pred)}")

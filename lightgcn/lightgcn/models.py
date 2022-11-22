@@ -25,7 +25,7 @@ def train(
     model,
     train_data,
     valid_data=None,
-    n_epoch=500,
+    n_epoch=50,
     learning_rate=0.001,
     use_wandb=False,
     weight=None,
@@ -53,7 +53,6 @@ def train(
         # forward
         pred = model(train_data["edge"])
         loss = model.link_pred_loss(pred, train_data["label"])
-
         # backward
         optimizer.zero_grad()
         loss.backward()
