@@ -5,6 +5,7 @@ import torch
 from sklearn.metrics import accuracy_score, roc_auc_score, precision_score, recall_score, f1_score
 
 from torch_geometric.nn.models import LightGCN
+from custom_scheduler import CosineAnnealingWarmUpRestarts as wca
 
 from config import CFG
 
@@ -26,15 +27,17 @@ def train(
     model,
     train_data,
     valid_data=None,
-    n_epoch=100,
-    learning_rate=0.01,
+    n_epoch=50,
+    learning_rate=0.001,
     use_wandb=False,
     weight=None,
     logger=None,
 ):
     model.train()
-
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+    # wca(optimizer, T_0=150, T_mult=1, eta_max=0.1, T_up=0, gamma=1., last_epoch=-1)
+    # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, 100, eta_min=0.001, last_epoch=- 1, verbose=False)
+    scheduler = wca(optimizer, T_0=50, T_mult=2, eta_max=0.005,  T_up=5, gamma=0.5)
 
     if not os.path.exists(weight):
         os.makedirs(weight)
@@ -56,7 +59,6 @@ def train(
         # forward
         pred = model(train_data["edge"])
         loss = model.link_pred_loss(pred, train_data["label"])
-
         # backward
         optimizer.zero_grad()
         loss.backward()
