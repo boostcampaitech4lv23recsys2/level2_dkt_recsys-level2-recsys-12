@@ -153,10 +153,11 @@ def inference(args, test_data, model):
 
         # predictions
         preds = preds[:, -1]
+        preds = torch.nn.Sigmoid()(preds)
         preds = preds.cpu().detach().numpy()
         total_preds += list(preds)
-
-    write_path = os.path.join(args.output_dir, "submission.csv")
+    
+    write_path = os.path.join(args.output_dir, f"submission_{args.model}_{args.batch_size}_{args.lr}_{args.n_epochs}.csv")
     if not os.path.exists(args.output_dir):
         os.makedirs(args.output_dir)
     with open(write_path, "w", encoding="utf8") as w:

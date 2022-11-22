@@ -19,8 +19,8 @@ def main(args):
     train_data = preprocess.get_train_data()
 
     train_data, valid_data = preprocess.split_data(train_data)
-
-    wandb.init(project="dkt", config=vars(args))
+    
+    wandb.init(project="dkt", config=vars(args),  name=f"{args.model}_{args.lr}_{args.batch_size}")
     model = trainer.get_model(args).to(args.device)
     trainer.run(args, train_data, valid_data, model)
 
