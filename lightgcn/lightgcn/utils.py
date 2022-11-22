@@ -4,7 +4,6 @@ import random
 import numpy as np
 import torch
 
-
 class process:
     def __init__(self, logger, name):
         self.logger = logger

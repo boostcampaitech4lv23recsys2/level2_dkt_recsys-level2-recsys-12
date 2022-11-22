@@ -2,9 +2,11 @@ import os
 
 import numpy as np
 import torch
-from sklearn.metrics import accuracy_score, roc_auc_score
+from sklearn.metrics import accuracy_score, roc_auc_score, precision_score, recall_score, f1_score
+
 from torch_geometric.nn.models import LightGCN
 
+from config import CFG
 
 def build(n_node, weight=None, logger=None, **kwargs):
     model = LightGCN(n_node, **kwargs)
@@ -43,9 +45,13 @@ def train(
         edge, label = train_data["edge"], train_data["label"]
         label = label.to("cpu").detach().numpy()
         valid_data = dict(edge=edge[:, eids], label=label[eids])
-
+        
+    valid_data['label'] = valid_data['label'].to('cpu').detach().numpy() # convert for score calc
+        
     logger.info(f"Training Started : n_epoch={n_epoch}")
     best_auc, best_epoch = 0, -1
+    patience_check = 0
+    patience_limit = CFG.patience
     for e in range(n_epoch):
         # forward
         pred = model(train_data["edge"])
@@ -61,24 +67,34 @@ def train(
             prob = prob.detach().cpu().numpy()
             acc = accuracy_score(valid_data["label"], prob > 0.5)
             auc = roc_auc_score(valid_data["label"], prob)
+            precision = precision_score(valid_data["label"], prob > 0.5)
+            recall = recall_score(valid_data["label"], prob > 0.5)
+            f1 = f1_score(valid_data["label"], prob > 0.5)
             logger.info(
-                f" * In epoch {(e+1):04}, loss={loss:.03f}, acc={acc:.03f}, AUC={auc:.03f}"
+                f" * In epoch {(e+1):04}, loss={loss:.03f}, acc={acc:.03f}, AUC={auc:.03f}, Precision={precision:.03f}, Recall={recall:.03f}, F1={f1:.03f}"
             )
             if use_wandb:
                 import wandb
 
-                wandb.log(dict(loss=loss, acc=acc, auc=auc))
+                wandb.log(dict(loss=loss, acc=acc, auc=auc, precision=precision, recall=recall, f1=f1))
 
         if weight:
             if auc > best_auc:
+                patience_check = 0
                 logger.info(
-                    f" * In epoch {(e+1):04}, loss={loss:.03f}, acc={acc:.03f}, AUC={auc:.03f}, Best AUC"
+                    f" * In epoch {(e+1):04}, loss={loss:.03f}, acc={acc:.03f}, AUC={auc:.03f}, Precision={precision:.03f}, Recall={recall:.03f}, F1={f1:.03f}, Best AUC"
                 )
-                best_auc, best_epoch = auc, e
+                best_auc, best_epoch, best_prob = auc, e, prob
                 torch.save(
                     {"model": model.state_dict(), "epoch": e + 1},
                     os.path.join(weight, f"best_model.pt"),
                 )
+            else:
+                print(f"auc : {auc}", f"best_auc : {best_auc}")
+                patience_check += 1
+                print(f"patience_check : {patience_check}")
+                '''if patience_check >= patience_limit:
+                    break'''
     torch.save(
         {"model": model.state_dict(), "epoch": e + 1},
         os.path.join(weight, f"last_model.pt"),
@@ -91,3 +107,4 @@ def inference(model, data, logger=None):
     with torch.no_grad():
         pred = model.predict_link(data["edge"], prob=True)
         return pred
+

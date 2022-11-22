@@ -2,19 +2,30 @@ import os
 
 import pandas as pd
 import torch
+from sklearn.model_selection import train_test_split
 
+def prepare_dataset(device, basepath, verbose=True, logger=None, isTrain=False):
+    if isTrain:
+        data = load_data(basepath)
+        train_data, test_data, valid_data = separate_data(data, isTrain=True)
+        id2index = indexing_data(data)
+        train_data_proc = process_data(train_data, id2index, device)
+        test_data_proc = process_data(test_data, id2index, device)
+        valid_data_proc = process_data(valid_data, id2index, device)
+        if verbose:
+            print_data_stat(train_data, "Train", logger=logger)
+            print_data_stat(test_data, "Test", logger=logger)
+            print_data_stat(valid_data, "Valid", logger=logger)
+        return train_data_proc, test_data_proc, valid_data_proc, len(id2index)
 
-def prepare_dataset(device, basepath, verbose=True, logger=None):
     data = load_data(basepath)
     train_data, test_data = separate_data(data)
     id2index = indexing_data(data)
     train_data_proc = process_data(train_data, id2index, device)
     test_data_proc = process_data(test_data, id2index, device)
-
     if verbose:
         print_data_stat(train_data, "Train", logger=logger)
         print_data_stat(test_data, "Test", logger=logger)
-
     return train_data_proc, test_data_proc, len(id2index)
 
 
@@ -32,10 +43,15 @@ def load_data(basepath):
     return data
 
 
-def separate_data(data):
+def separate_data(data, isTrain=False, test_size=0.2):
     train_data = data[data.answerCode >= 0]
     test_data = data[data.answerCode < 0]
-
+    if isTrain:
+        # breakpoint()
+        x_train, x_valid, y_train, y_valid = train_test_split(train_data.drop('answerCode',axis=1), train_data['answerCode'], test_size=0.2, random_state=42)
+        x_train['answerCode']=y_train
+        x_valid['answerCode']=y_valid
+        return x_train, test_data, x_valid
     return train_data, test_data
 
 
@@ -53,7 +69,7 @@ def indexing_data(data):
     return id_2_index
 
 
-def process_data(data, id_2_index, device):
+def process_data(data, id_2_index, device, isTrain=False):
     edge, label = [], []
     for user, item, acode in zip(data.userID, data.assessmentItemID, data.answerCode):
         uid, iid = id_2_index[user], id_2_index[item]
@@ -75,3 +91,4 @@ def print_data_stat(data, name, logger):
     logger.info(f" * Max. UserID   : {max(userid)}")
     logger.info(f" * Num. Items    : {n_item}")
     logger.info(f" * Num. Records  : {len(data)}")
+    
