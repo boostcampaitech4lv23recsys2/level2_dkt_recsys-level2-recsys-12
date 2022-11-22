@@ -21,7 +21,6 @@ wandb/
 weight/
 asset/
 output/
-XGB/
 
 ### JupyterNotebooks ###
 # gitignore template for Jupyter Notebooks
