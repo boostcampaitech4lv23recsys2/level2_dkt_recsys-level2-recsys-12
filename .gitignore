@@ -8,6 +8,20 @@ wandb/
 # log
 *.log
 
+# npy
+*.npy
+
+# csv
+*.csv
+
+# pt
+*.pt
+
+# folders
+weight/
+asset/
+output/
+
 ### JupyterNotebooks ###
 # gitignore template for Jupyter Notebooks
 # website: http://jupyter.org/
