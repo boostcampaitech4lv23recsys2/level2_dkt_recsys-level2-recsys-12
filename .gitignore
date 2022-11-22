@@ -8,6 +8,21 @@ wandb/
 # log
 *.log
 
+# npy
+*.npy
+
+# csv
+*.csv
+
+# pt
+*.pt
+
+# folders
+weight/
+asset/
+output/
+XGB/
+
 ### JupyterNotebooks ###
 # gitignore template for Jupyter Notebooks
 # website: http://jupyter.org/
@@ -201,9 +216,3 @@ cython_debug/
 .ionide
 
 # End of https://www.toptal.com/developers/gitignore/api/python,visualstudiocode,jupyternotebooks
-
-*.npy
-dkt/
-/dkt/
-/XGB/
-XGB/

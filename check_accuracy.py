@@ -3,7 +3,7 @@ from sklearn.metrics import accuracy_score, roc_auc_score
 
 threshold=0.5
 PRED_PATH = "lightgcn/output/submission.csv"
-ANSWER_PATH = "custom_answer.csv"
+ANSWER_PATH = "../data/custom_answer.csv"
 
 submission_result = pd.read_csv(PRED_PATH)
 answer = pd.read_csv(ANSWER_PATH)
