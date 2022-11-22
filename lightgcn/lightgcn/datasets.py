@@ -4,7 +4,9 @@ import pandas as pd
 import torch
 from sklearn.model_selection import train_test_split
 
+from feature_engineering import lightgcn_feature_engineering
 
+# code/feature_engineering.py
 def prepare_dataset(device, basepath, verbose=True, logger=None, isTrain=False):
     if isTrain:
         data = load_data(basepath)
@@ -32,10 +34,11 @@ def prepare_dataset(device, basepath, verbose=True, logger=None, isTrain=False):
 
 def load_data(basepath):
     path1 = os.path.join(basepath, "train_data.csv")
-    path2 = os.path.join(basepath, "test_data.csv")
+    path2 = os.path.join(basepath, "custom_test_data.csv")
     data1 = pd.read_csv(path1)
     data2 = pd.read_csv(path2)
-
+    data1 = lightgcn_feature_engineering(data1)
+    data2 = lightgcn_feature_engineering(data2)
     data = pd.concat([data1, data2])
     data.drop_duplicates(
         subset=["userID", "assessmentItemID"], keep="last", inplace=True
@@ -48,7 +51,6 @@ def separate_data(data, isTrain=False, test_size=0.2):
     train_data = data[data.answerCode >= 0]
     test_data = data[data.answerCode < 0]
     if isTrain:
-        # breakpoint()
         x_train, x_valid, y_train, y_valid = train_test_split(train_data.drop('answerCode',axis=1), train_data['answerCode'], test_size=0.2, random_state=42)
         x_train['answerCode']=y_train
         x_valid['answerCode']=y_valid

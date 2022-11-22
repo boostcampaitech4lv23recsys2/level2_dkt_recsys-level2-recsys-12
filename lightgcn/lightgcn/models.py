@@ -25,14 +25,13 @@ def train(
     model,
     train_data,
     valid_data=None,
-    n_epoch=100,
+    n_epoch=50,
     learning_rate=0.001,
     use_wandb=False,
     weight=None,
     logger=None,
 ):
     model.train()
-
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     # wca(optimizer, T_0=150, T_mult=1, eta_max=0.1, T_up=0, gamma=1., last_epoch=-1)
     # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, 100, eta_min=0.001, last_epoch=- 1, verbose=False)
@@ -54,7 +53,6 @@ def train(
         # forward
         pred = model(train_data["edge"])
         loss = model.link_pred_loss(pred, train_data["label"])
-
         # backward
         optimizer.zero_grad()
         loss.backward()
