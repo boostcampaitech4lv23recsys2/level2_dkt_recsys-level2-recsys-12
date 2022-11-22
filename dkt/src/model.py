@@ -86,7 +86,6 @@ class LSTMATTN(nn.Module):
             self.args.n_questions + 1, self.hidden_dim // 3
         )
         self.embedding_tag = nn.Embedding(self.args.n_tag + 1, self.hidden_dim // 3)
-        self.embedding_ans_rate = nn.Embedding(self.args.n_answer_rate + 1, self.hidden_dim // 3)
 
         # embedding combination projection
         self.comb_proj = nn.Linear((self.hidden_dim // 3) * 4, self.hidden_dim)
@@ -113,7 +112,8 @@ class LSTMATTN(nn.Module):
 
     def forward(self, input):
 
-        test, question, tag, _, mask, interaction, ans_rate = input
+        test, question, tag, _, mask, interaction = input
+
         batch_size = interaction.size(0)
 
         # Embedding
@@ -121,17 +121,17 @@ class LSTMATTN(nn.Module):
         embed_test = self.embedding_test(test)
         embed_question = self.embedding_question(question)
         embed_tag = self.embedding_tag(tag)
-        embed_ans_rate = self.embedding_ans_rate(ans_rate)
+
         embed = torch.cat(
             [
                 embed_interaction,
                 embed_test,
                 embed_question,
                 embed_tag,
-                embed_ans_rate,
             ],
             2,
         )
+
         X = self.comb_proj(embed)
 
         out, _ = self.lstm(X)

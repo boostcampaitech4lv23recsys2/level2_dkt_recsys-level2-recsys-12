@@ -15,7 +15,6 @@ class Preprocess:
         self.args = args
         self.train_data = None
         self.test_data = None
-        self.drops = ["answerCode", "userID", "Timestamp"]
 
     def get_train_data(self):
         return self.train_data
@@ -42,13 +41,12 @@ class Preprocess:
         np.save(le_path, encoder.classes_)
 
     def __preprocessing(self, df, is_train=True):
-        cate_cols = df.columns
+        cate_cols = ["assessmentItemID", "testId", "KnowledgeTag"]
+
         if not os.path.exists(self.args.asset_dir):
             os.makedirs(self.args.asset_dir)
 
         for col in cate_cols:
-            if col in self.drops:
-                continue
 
             le = LabelEncoder()
             if is_train:
@@ -74,20 +72,13 @@ class Preprocess:
                 datetime.strptime(s, "%Y-%m-%d %H:%M:%S").timetuple()
             )
             return int(timestamp)
-        def rate_preprocessing(s):
-            return s
 
         df["Timestamp"] = df["Timestamp"].apply(convert_time)
 
         return df
 
     def __feature_engineering(self, df):
-        # Todo
-        answer_rate = df.groupby('userID').agg({
-            "answerCode":"mean"
-        })
-        answer_rate.columns=["answerRate"]
-        df = pd.merge(df,answer_rate, how='left', on='userID')
+        # TODO
         return df
 
     def load_data_from_file(self, file_name, is_train=True):
@@ -95,7 +86,9 @@ class Preprocess:
         df = pd.read_csv(csv_file_path)  # , nrows=100000)
         df = self.__feature_engineering(df)
         df = self.__preprocessing(df, is_train)
+
         # 추후 feature를 embedding할 시에 embedding_layer의 input 크기를 결정할때 사용
+
         self.args.n_questions = len(
             np.load(os.path.join(self.args.asset_dir, "assessmentItemID_classes.npy"))
         )
@@ -105,21 +98,18 @@ class Preprocess:
         self.args.n_tag = len(
             np.load(os.path.join(self.args.asset_dir, "KnowledgeTag_classes.npy"))
         )
-        self.args.n_answer_rate = len(
-            np.load(os.path.join(self.args.asset_dir, "answerRate_classes.npy"))
-        )
+
         df = df.sort_values(by=["userID", "Timestamp"], axis=0)
-        columns = df.columns
+        columns = ["userID", "assessmentItemID", "testId", "answerCode", "KnowledgeTag"]
         group = (
             df[columns]
             .groupby("userID")
             .apply(
                 lambda r: (
-                    [r[col].values for col in columns]
-                    # r["testId"].values,
-                    # r["assessmentItemID"].values,
-                    # r["KnowledgeTag"].values,
-                    # r["answerCode"].values,
+                    r["testId"].values,
+                    r["assessmentItemID"].values,
+                    r["KnowledgeTag"].values,
+                    r["answerCode"].values,
                 )
             )
         )
@@ -140,6 +130,7 @@ class DKTDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, index):
         row = self.data[index]
+
         # 각 data의 sequence length
         seq_len = len(row[0])
 
@@ -162,6 +153,7 @@ class DKTDataset(torch.utils.data.Dataset):
         # np.array -> torch.tensor 형변환
         for i, col in enumerate(cate_cols):
             cate_cols[i] = torch.tensor(col)
+
         return cate_cols
 
     def __len__(self):
