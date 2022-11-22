@@ -204,4 +204,5 @@ cython_debug/
 
 *.npy
 dkt/
+/XGB/
 XGB/

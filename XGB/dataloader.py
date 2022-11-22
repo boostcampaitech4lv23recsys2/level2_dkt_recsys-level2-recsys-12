@@ -1,5 +1,5 @@
 import pandas as pd
-from ..feature_engineering import feature_engineering
+from feature_engineering import feature_engineering
 
 def load_data(basepath=""):
     path1 = os.path.join(basepath, "train_data.csv")
