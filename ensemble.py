@@ -150,7 +150,7 @@ if __name__ == "__main__":
         "--RESULT_PATH",
         type=str,
         default="./output/",
-        help='optional: 앙상블할 파일이 존재하는 경로를 전달합니다. (default:"./submit/")',
+        help='optional: 앙상블할 파일이 존재하는 경로를 전달합니다. (default:"./output/")',
     )
     args = parser.parse_args()
     main(args)
