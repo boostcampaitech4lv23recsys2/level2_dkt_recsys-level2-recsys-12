@@ -1,10 +1,10 @@
 import pandas as pd
 import torch
 from config import CFG, logging_conf
+
 from lightgcn.datasets import prepare_dataset
 from lightgcn.models import build, train
 from lightgcn.utils import class2dict, get_logger
-
 
 if CFG.user_wandb:
     import wandb

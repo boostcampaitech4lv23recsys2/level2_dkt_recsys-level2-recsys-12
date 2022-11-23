@@ -1,5 +1,5 @@
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 train = pd.read_csv("train_data.csv")
 

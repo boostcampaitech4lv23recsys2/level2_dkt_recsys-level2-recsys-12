@@ -2,18 +2,11 @@ import os
 
 import numpy as np
 import torch
-from sklearn.metrics import (
-    accuracy_score,
-    roc_auc_score,
-    precision_score,
-    recall_score,
-    f1_score,
-)
-
-from torch_geometric.nn.models import LightGCN
-from custom_scheduler import CosineAnnealingWarmUpRestarts as wca
-
 from config import CFG
+from custom_scheduler import CosineAnnealingWarmUpRestarts as wca
+from sklearn.metrics import (accuracy_score, f1_score, precision_score,
+                             recall_score, roc_auc_score)
+from torch_geometric.nn.models import LightGCN
 
 
 def build(n_node, weight=None, logger=None, **kwargs):

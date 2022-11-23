@@ -4,11 +4,8 @@ import torch.nn as nn
 try:
     from transformers.modeling_bert import BertConfig, BertEncoder, BertModel
 except:
-    from transformers.models.bert.modeling_bert import (
-        BertConfig,
-        BertEncoder,
-        BertModel,
-    )
+    from transformers.models.bert.modeling_bert import (BertConfig,
+                                                        BertEncoder, BertModel)
 
 
 class LSTM(nn.Module):

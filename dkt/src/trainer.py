@@ -1,19 +1,17 @@
 import math
 import os
+from datetime import datetime
 
 import torch
 import wandb
+from sklearn.model_selection import KFold
 
 from .criterion import get_criterion
-from .dataloader import get_loaders
-from .dataloader import get_loaders_kfold
+from .dataloader import get_loaders, get_loaders_kfold
 from .metric import get_metric
 from .model import LSTM, LSTMATTN, Bert
 from .optimizer import get_optimizer
 from .scheduler import get_scheduler
-
-from sklearn.model_selection import KFold
-from datetime import datetime
 
 
 def run(args, train_data, valid_data, model):

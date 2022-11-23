@@ -5,38 +5,32 @@
 # In[1]:
 
 
+import os
+import random
+import warnings
+
+import numpy as np
 # import packages
 import pandas as pd
-import numpy as np
-import warnings
-import random
-import os
 
 warnings.filterwarnings(action="ignore")
 
-from catboost import CatBoostRegressor, CatBoostClassifier, Pool
-
-import seaborn as sns
-import matplotlib.pyplot as plt
-
-from sklearn.metrics import roc_auc_score
-from sklearn.metrics import accuracy_score
-from sklearn import preprocessing
-
-from sklearn.inspection import permutation_importance
-
+import sys
 # output csv에 시간 지정해주기 위함
 from datetime import datetime
 
-
-import sys
+import matplotlib.pyplot as plt
+import seaborn as sns
+from catboost import CatBoostClassifier, CatBoostRegressor, Pool
+from sklearn import preprocessing
+from sklearn.inspection import permutation_importance
+from sklearn.metrics import accuracy_score, roc_auc_score
 
 sys.path.append("../")
-from feature_engineering import *
-
 # 시간이 오래 걸리는 부분들에 대한 연산 시간 구하기 위함
 import time
 
+from feature_engineering import *
 
 # ### train_test_split_mode_1 / train_test_split_mode_2
 # docstring 부분을 참고해주세요!
