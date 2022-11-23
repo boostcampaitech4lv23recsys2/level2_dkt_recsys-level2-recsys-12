@@ -208,3 +208,21 @@ def get_loaders(args, train, valid):
         )
 
     return train_loader, valid_loader
+
+
+def get_loaders_kfold(args, data, sampler):
+
+    pin_memory = False
+    dataloader = None
+
+    trainset = DKTDataset(data, args)
+    dataloader = torch.utils.data.DataLoader(
+        trainset,
+        num_workers=args.num_workers,
+        batch_size=args.batch_size,
+        pin_memory=pin_memory,
+        collate_fn=collate,
+        sampler=sampler,
+    )
+
+    return dataloader

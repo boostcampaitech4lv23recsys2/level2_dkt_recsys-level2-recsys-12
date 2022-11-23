@@ -3,6 +3,7 @@ import os
 import pandas as pd
 import torch
 from config import CFG, logging_conf
+
 from lightgcn.datasets import prepare_dataset
 from lightgcn.models import build, inference
 from lightgcn.utils import get_logger
