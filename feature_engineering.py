@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import os
 
 def get_groupby_user_features(df):
@@ -108,25 +109,10 @@ ADD_LIST = [
 DROP_LIST = []
 
 
-def __feature_engineering(df):
+def feature_engineering(df):
     """
     Make features in ADD_LIST (not in DROP_LIST)
     """
     for func in ADD_LIST:
         df = func(df)
     return df.drop(DROP_LIST, axis=1)
-
-
-def load_xgb_data(basepath="../../data/"):
-    """Load data for xgboost"""
-    path1 = os.path.join(basepath, "train_data.csv")
-    path2 = os.path.join(basepath, "test_data.csv")
-    data1 = pd.read_csv(path1)
-    data2 = pd.read_csv(path2)
-    data = pd.concat([data1, data2])
-    data = data.sort_values(["userID", "Timestamp"])
-    data.drop_duplicates(
-        subset=["userID", "assessmentItemID"], keep="last", inplace=True
-    )
-    data = __feature_engineering(data)
-    return data
