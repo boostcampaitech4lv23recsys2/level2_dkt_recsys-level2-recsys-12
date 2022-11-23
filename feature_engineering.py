@@ -1,51 +1,55 @@
 import pandas as pd
 import numpy as np
+
 train = pd.read_csv("train_data.csv")
+
 
 def get_groupby_user_features(df):
     """AnswerRate and solvedCount groupby userID"""
-    answer_rate = df.groupby('userID')["answerCode"].agg(["mean","count"])
-    answer_rate.columns=["userAnswerRate","userSolvedLen"]
-    new_df = pd.merge(df,answer_rate, how='left', on='userID')
+    answer_rate = df.groupby("userID")["answerCode"].agg(["mean", "count"])
+    answer_rate.columns = ["userAnswerRate", "userSolvedLen"]
+    new_df = pd.merge(df, answer_rate, how="left", on="userID")
     return new_df
 
 
 def get_groupby_test_features(df):
     """AnswerRate and solvedCount groupby testId"""
-    answer_rate = df.groupby('testId')["answerCode"].agg(["mean","count"])
-    answer_rate.columns=["testAnswerRate","testSolvedLen"]
-    new_df = pd.merge(df,answer_rate, how='left', on='testId')
+    answer_rate = df.groupby("testId")["answerCode"].agg(["mean", "count"])
+    answer_rate.columns = ["testAnswerRate", "testSolvedLen"]
+    new_df = pd.merge(df, answer_rate, how="left", on="testId")
     return new_df
+
 
 def get_groupby_tag_features(df):
     """AnswerRate and solvedCount groupby KnowledgeTag"""
-    answer_rate = df.groupby('KnowledgeTag')["answerCode"].agg(["mean","count"])
-    answer_rate.columns=["tagAnswerRate","tagSolvedLen"]
-    new_df = pd.merge(df,answer_rate, how='left', on='KnowledgeTag')
+    answer_rate = df.groupby("KnowledgeTag")["answerCode"].agg(["mean", "count"])
+    answer_rate.columns = ["tagAnswerRate", "tagSolvedLen"]
+    new_df = pd.merge(df, answer_rate, how="left", on="KnowledgeTag")
     return new_df
 
 
 def split_time(data):
     """Split Timestamp into year, month, day, hour, minute and second"""
     new_data = data.copy()
-    new_data["temp1"] = new_data["Timestamp"].apply(lambda x:x.split()[0])
-    new_data["temp2"] = new_data["Timestamp"].apply(lambda x:x.split()[1])
-    
-    new_data["year"] = new_data["temp1"].apply(lambda x:x.split("-")[0])
-    new_data["month"] = new_data["temp1"].apply(lambda x:x.split("-")[1])
-    new_data["day"] = new_data["temp1"].apply(lambda x:x.split("-")[2])
-    
-    new_data["hour"] = new_data["temp2"].apply(lambda x:x.split(":")[0])
-    new_data["minute"] = new_data["temp2"].apply(lambda x:x.split(":")[1])
-    new_data["second"] = new_data["temp2"].apply(lambda x:x.split(":")[2])
-    
-    return new_data.drop(["temp1","temp2"],axis=1)
+    new_data["temp1"] = new_data["Timestamp"].apply(lambda x: x.split()[0])
+    new_data["temp2"] = new_data["Timestamp"].apply(lambda x: x.split()[1])
+
+    new_data["year"] = new_data["temp1"].apply(lambda x: x.split("-")[0])
+    new_data["month"] = new_data["temp1"].apply(lambda x: x.split("-")[1])
+    new_data["day"] = new_data["temp1"].apply(lambda x: x.split("-")[2])
+
+    new_data["hour"] = new_data["temp2"].apply(lambda x: x.split(":")[0])
+    new_data["minute"] = new_data["temp2"].apply(lambda x: x.split(":")[1])
+    new_data["second"] = new_data["temp2"].apply(lambda x: x.split(":")[2])
+
+    return new_data.drop(["temp1", "temp2"], axis=1)
 
 
 def get_first3(data):
     """Get first3 token from assessmentItemID"""
-    data["first3"]=data["assessmentItemID"].apply(lambda x:x[1:4])
+    data["first3"] = data["assessmentItemID"].apply(lambda x: x[1:4])
     return data
+
 
 def get_time_concentration(data):
     """
@@ -57,11 +61,14 @@ def get_time_concentration(data):
     """
     if "hour" not in data.columns:
         data = split_time(data)
-    timeConcentration = data.groupby("hour")["answerCode"].agg(["mean","count"])
-    timeConcentration.columns=["timeConcentrationRate", "timeConcentrationCount"]
-    new_df = pd.merge(data,timeConcentration, how='left', on='hour')
-    new_df["timeConcentrationLevel"] = new_df["timeConcentrationRate"].apply(lambda x:2 if x>0.65 else 0 if x < 0.63 else 1)
+    timeConcentration = data.groupby("hour")["answerCode"].agg(["mean", "count"])
+    timeConcentration.columns = ["timeConcentrationRate", "timeConcentrationCount"]
+    new_df = pd.merge(data, timeConcentration, how="left", on="hour")
+    new_df["timeConcentrationLevel"] = new_df["timeConcentrationRate"].apply(
+        lambda x: 2 if x > 0.65 else 0 if x < 0.63 else 1
+    )
     return new_df
+
 
 def get_user_log(data):
     """
@@ -70,10 +77,13 @@ def get_user_log(data):
     user_total_answer : Number of previous problems solved by the user
     user_acc : Answer rate of previous problems solved by the user
     """
-    data["user_correct_answer"] = data.groupby("userID")["answerCode"].transform(lambda x: x.cumsum().shift(1))
+    data["user_correct_answer"] = data.groupby("userID")["answerCode"].transform(
+        lambda x: x.cumsum().shift(1)
+    )
     data["user_total_answer"] = data.groupby("userID")["answerCode"].cumcount()
-    data["user_acc"] = data["user_correct_answer"]/data["user_total_answer"]
+    data["user_acc"] = data["user_correct_answer"] / data["user_total_answer"]
     return data
+
 
 def get_seoson_concentration(data):
     """
@@ -83,9 +93,9 @@ def get_seoson_concentration(data):
     """
     if "month" not in data.columns:
         data = split_time(data)
-    groupby_month = data.groupby("month")["answerCode"].agg(["mean","count"])
-    groupby_month.columns = ["monthAnswerRate","monthSolvedCount"]
-    new_df = pd.merge(data,groupby_month, how='left', on='month')
+    groupby_month = data.groupby("month")["answerCode"].agg(["mean", "count"])
+    groupby_month.columns = ["monthAnswerRate", "monthSolvedCount"]
+    new_df = pd.merge(data, groupby_month, how="left", on="month")
     return new_df
 
 

@@ -52,9 +52,14 @@ def separate_data(data, isTrain=False, test_size=0.2):
     test_data = data[data.answerCode < 0]
     if isTrain:
         # breakpoint()
-        x_train, x_valid, y_train, y_valid = train_test_split(train_data.drop('answerCode',axis=1), train_data['answerCode'], test_size=0.2, random_state=42)
-        x_train['answerCode']=y_train
-        x_valid['answerCode']=y_valid
+        x_train, x_valid, y_train, y_valid = train_test_split(
+            train_data.drop("answerCode", axis=1),
+            train_data["answerCode"],
+            test_size=0.2,
+            random_state=42,
+        )
+        x_train["answerCode"] = y_train
+        x_valid["answerCode"] = y_valid
         return x_train, test_data, x_valid
     return train_data, test_data
 
@@ -95,4 +100,3 @@ def print_data_stat(data, name, logger):
     logger.info(f" * Max. UserID   : {max(userid)}")
     logger.info(f" * Num. Items    : {n_item}")
     logger.info(f" * Num. Records  : {len(data)}")
-    

@@ -8,9 +8,9 @@ from lightgcn.utils import class2dict, get_logger
 
 if CFG.user_wandb:
     import wandb
-    
-    wandb_name = 'JS'+'_'+str(CFG.learning_rate)+'_'+str(CFG.embedding_dim)
-    wandb.init(**CFG.wandb_kwargs, config=class2dict(CFG), name =wandb_name)
+
+    wandb_name = "JS" + "_" + str(CFG.learning_rate) + "_" + str(CFG.embedding_dim)
+    wandb.init(**CFG.wandb_kwargs, config=class2dict(CFG), name=wandb_name)
 
 
 logger = get_logger(logging_conf)
@@ -25,7 +25,11 @@ def main():
     logger.info("[1/1] Data Preparing - Start")
     # train_data, test_data, n_node = prepare_dataset(
     train_data, test_data, valid_data, n_node = prepare_dataset(
-        device, CFG.basepath, verbose=CFG.loader_verbose, logger=logger.getChild("data"), isTrain=True
+        device,
+        CFG.basepath,
+        verbose=CFG.loader_verbose,
+        logger=logger.getChild("data"),
+        isTrain=True,
     )
     logger.info("[1/1] Data Preparing - Done")
 
@@ -64,7 +68,7 @@ def main():
 if __name__ == "__main__":
     main()
 
-'''if CFG.user_wandb:
+"""if CFG.user_wandb:
     import wandb
     
     wandb_name = str(CFG.learning_rate)+'_'+str(CFG.embedding_dim)
@@ -121,4 +125,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-'''
+"""

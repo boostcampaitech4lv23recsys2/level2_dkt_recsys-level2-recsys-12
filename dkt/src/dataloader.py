@@ -103,7 +103,7 @@ class Preprocess:
         columns = ["userID", "assessmentItemID", "testId", "answerCode", "KnowledgeTag"]
         group = (
             df[columns]
-            .groupby("userID")  
+            .groupby("userID")
             .apply(
                 lambda r: (
                     r["testId"].values,
@@ -113,7 +113,7 @@ class Preprocess:
                 )
             )
         )
-        
+
         return group.values
 
     def load_train_data(self, file_name):
@@ -163,7 +163,7 @@ class DKTDataset(torch.utils.data.Dataset):
 from torch.nn.utils.rnn import pad_sequence
 
 
-def collate(batch): 
+def collate(batch):
     col_n = len(batch[0])
     col_list = [[] for _ in range(col_n)]
     max_seq_len = len(batch[0][-1])
@@ -211,7 +211,7 @@ def get_loaders(args, train, valid):
 
 
 def get_loaders_kfold(args, data, sampler):
-    
+
     pin_memory = False
     dataloader = None
 

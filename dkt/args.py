@@ -59,7 +59,7 @@ def parse_args():
     parser.add_argument(
         "--log_steps", default=50, type=int, help="print log per n steps"
     )
-    
+
     parser.add_argument("--kfold", default=0, type=int, help="apply k-fold if not 0")
 
     ### 중요 ###

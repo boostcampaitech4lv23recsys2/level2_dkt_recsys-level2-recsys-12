@@ -78,9 +78,10 @@ def run(args, train_data, valid_data, model):
         if args.scheduler == "plateau":
             scheduler.step(best_auc)
 
+
 def run_kfold(args, train_data, preprocess, model):
     kfold = KFold(n_splits=args.kfold, random_state=args.seed, shuffle=True)
-    
+
     for fold, (train_idx, valid_idx) in enumerate(kfold.split(train_data)):
         inner_model = model
         train_data_fold, valid_data_fold = preprocess.split_data(train_data)
@@ -107,7 +108,7 @@ def run_kfold(args, train_data, preprocess, model):
             train_data,
             valid_subsampler,
         )
-        
+
         best_auc = -1
         early_stopping_counter = 0
         for epoch in range(args.n_epochs):
@@ -118,7 +119,6 @@ def run_kfold(args, train_data, preprocess, model):
             train_auc, train_acc, train_loss = train(
                 train_loader, inner_model, optimizer, scheduler, args
             )
-
 
             ### VALID
             auc, acc = validate(valid_loader, inner_model, args)
@@ -137,7 +137,9 @@ def run_kfold(args, train_data, preprocess, model):
             if auc > best_auc:
                 best_auc = auc
                 # torch.nn.DataParallel로 감싸진 경우 원래의 model을 가져옵니다.
-                model_to_save = inner_model.module if hasattr(inner_model, "module") else model
+                model_to_save = (
+                    inner_model.module if hasattr(inner_model, "module") else model
+                )
                 save_checkpoint(
                     {
                         "epoch": epoch + 1,
@@ -243,8 +245,12 @@ def inference(args, test_data, model):
         total_preds += list(preds)
 
     from datetime import datetime
-    time = datetime.now().strftime('%m.%d_%H%M%S')
-    write_path = os.path.join(args.output_dir, f"{time}_{args.model}_{args.n_epochs}_{args.lr}_{args.patience}_{args.batch_size}.csv")
+
+    time = datetime.now().strftime("%m.%d_%H%M%S")
+    write_path = os.path.join(
+        args.output_dir,
+        f"{time}_{args.model}_{args.n_epochs}_{args.lr}_{args.patience}_{args.batch_size}.csv",
+    )
     if not os.path.exists(args.output_dir):
         os.makedirs(args.output_dir)
     with open(write_path, "w", encoding="utf8") as w:
@@ -270,7 +276,7 @@ def inference_kfold(args, test_data, model, fold):
         preds = preds.cpu().detach().numpy()
         total_preds += list(preds)
 
-    time = datetime.now().strftime('%m.%d_%H%M%S')
+    time = datetime.now().strftime("%m.%d_%H%M%S")
     write_path = os.path.join(args.output_dir, f"{args.model}_{fold}.csv")
     if not os.path.exists(args.output_dir):
         os.makedirs(args.output_dir)
@@ -365,7 +371,7 @@ def load_model(args):
 
 
 def load_model_kfold(args, fold_idx: int):
-    
+
     model_path = os.path.join(args.model_dir, f"{args.model}_fold_{fold_idx}.pt")
     print("Loading Model from:", model_path)
     load_state = torch.load(model_path)

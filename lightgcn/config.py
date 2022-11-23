@@ -1,4 +1,5 @@
 import time
+
 # ====================================================
 # CFG
 # learning_rate=0.005,
@@ -12,15 +13,15 @@ import time
 class CFG:
     use_cuda_if_available = True
     user_wandb = True
-    #wandb_kwargs = dict(project="dkt-gcn")
-    wandb_kwargs = dict(project="DKT_LGCN", entity='ai-tech-4-recsys-12')
+    # wandb_kwargs = dict(project="dkt-gcn")
+    wandb_kwargs = dict(project="DKT_LGCN", entity="ai-tech-4-recsys-12")
 
     # data
     basepath = "/opt/ml/input/data/"
     loader_verbose = True
 
     # dump
-    timestr = time.strftime('%m.%d-%H:%M:%S') # 날짜
+    timestr = time.strftime("%m.%d-%H:%M:%S")  # 날짜
 
     output_dir = "./output/"
     pred_file = "submission_{}.csv".format(timestr)
@@ -30,8 +31,7 @@ class CFG:
     num_layers = 3  # int
     alpha = None  # Optional[Union[float, Tensor]]
     build_kwargs = {
-        "top_k":10,
-
+        "top_k": 10,
     }  # other arguments
     weight = "./weight/best_model.pt"
 
@@ -42,10 +42,11 @@ class CFG:
     patience = 20
 
     # wandb_kwargs = dict(
-    #     project="DKT_LGCN", 
-    #     entity="ai-tech-4-recsys-12", 
+    #     project="DKT_LGCN",
+    #     entity="ai-tech-4-recsys-12",
     #     name=f"TH_EMB_DIM{embedding_dim},LAYER{num_layers},LR{learning_rate}"
     #     )
+
 
 logging_conf = {  # only used when 'user_wandb==False'
     "version": 1,
