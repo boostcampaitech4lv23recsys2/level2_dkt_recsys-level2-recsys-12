@@ -221,4 +221,3 @@ output/
 weight/
 asset/
 *.pt
-*.ipynb
