@@ -95,6 +95,7 @@ def train(
                 print(f"auc : {auc}", f"best_auc : {best_auc}")
                 patience_check += 1
                 print(f"patience_check : {patience_check}")
+                # early stopping
                 '''if patience_check >= patience_limit:
                     break'''
     torch.save(
