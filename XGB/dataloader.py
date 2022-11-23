@@ -23,7 +23,9 @@ def separate_data(data=load_data()):
 def xgboost_preprocessing():
     train, test = separate_data()
     for col in train.columns:
-        train[col]=train[col].astype(float)
-        test[col]=test[col].astype(float)
-    X_train, X_test, y_train, y_test = train_test_split(train.drop("answerCode",axis=1), train["answerCode"] ,test_size=0.2)
+        train[col] = train[col].astype(float)
+        test[col] = test[col].astype(float)
+    X_train, X_test, y_train, y_test = train_test_split(
+        train.drop("answerCode", axis=1), train["answerCode"], test_size=0.2
+    )
     return X_train, X_test, y_train, y_test
