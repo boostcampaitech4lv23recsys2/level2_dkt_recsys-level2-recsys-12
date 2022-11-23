@@ -106,6 +106,7 @@ ADD_LIST = [
     get_groupby_user_features,
     get_groupby_test_features,
     get_groupby_tag_features,
+    get_groupby_item_features,
     split_time,
     get_first3,
     get_time_concentration,
