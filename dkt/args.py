@@ -60,7 +60,7 @@ def parse_args():
         "--log_steps", default=50, type=int, help="print log per n steps"
     )
     
-    parser.add_argument("--kfold", default=0, type=int)
+    parser.add_argument("--kfold", default=0, type=int, help="apply k-fold if not 0")
 
     ### 중요 ###
     parser.add_argument("--model", default="lstm", type=str, help="model type")
