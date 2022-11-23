@@ -103,7 +103,7 @@ class Preprocess:
         columns = ["userID", "assessmentItemID", "testId", "answerCode", "KnowledgeTag"]
         group = (
             df[columns]
-            .groupby("userID")  # 한유저당 gropuby로 모두 가져옴
+            .groupby("userID")  
             .apply(
                 lambda r: (
                     r["testId"].values,
@@ -163,7 +163,7 @@ class DKTDataset(torch.utils.data.Dataset):
 from torch.nn.utils.rnn import pad_sequence
 
 
-def collate(batch): # list 안에 cate_col
+def collate(batch): 
     col_n = len(batch[0])
     col_list = [[] for _ in range(col_n)]
     max_seq_len = len(batch[0][-1])
