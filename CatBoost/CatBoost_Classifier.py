@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[29]:
 
 
 # import packages
@@ -26,24 +25,16 @@ from sklearn.inspection import permutation_importance
 # output csv에 시간 지정해주기 위함
 from datetime import datetime
 
+import sys
+sys.path.append("../")
+from feature_engineering import *
 
-# In[30]:
-
-
-data_dir = "/opt/ml/input/data/"
-
-train_data = pd.read_csv(os.path.join(data_dir, "train_data.csv"))
-test_data = pd.read_csv(os.path.join(data_dir, "test_data.csv"))
-
-# 유저별 sequence로 다루기 위해 아래와 같이 정렬
-train_data.sort_values(by=["userID", "Timestamp"], inplace=True)
-test_data.sort_values(by=["userID", "Timestamp"], inplace=True)
+# 시간이 오래 걸리는 부분들에 대한 연산 시간 구하기 위함
+import time
 
 
 # ### train_test_split_mode_1 / train_test_split_mode_2
 # docstring 부분을 참고해주세요!
-
-# In[31]:
 
 
 """
@@ -74,10 +65,6 @@ def train_test_split_mode_1(df:pd.DataFrame, ratio=0.8, split=True):
     valid = valid[valid["userID"] != valid["userID"].shift(-1)]
     return train, valid
 
-
-# In[32]:
-
-
 """
 train_test_split_mode_2:
     train: train data
@@ -88,8 +75,6 @@ def train_test_split_mode_2(train_df:pd.DataFrame, test_df:pd.DataFrame):
     valid = valid[valid["userID"] != valid["userID"].shift(-1)]
     return train_df, test_df, valid
 
-
-# In[33]:
 
 
 def feature_engineering(df):
@@ -138,41 +123,93 @@ def feature_engineering(df):
     df2 = df2[["testId","first_3"]].drop_duplicates(["testId"])
     df = pd.merge(df, df2, on="testId", how="left")
     
+
+    df = split_time(df)
+    df = get_time_concentration(df)
+    df = get_seoson_concentration(df)
+    
     # 카테고리형 feature
 # 여기에 범주형 feature들 이름을 추가해주세요!
-    categories = ["KnowledgeTag",
-                  "first_3",]
-    # 카테고리형 feature를 수치형 feature로 변환해주는 작업
+    categories = [
+                "KnowledgeTag",
+                "first_3", 
+                "year",
+                "month", 
+                "day",
+                "hour",
+                "minute",
+                "second",
+                "timeConcentrationCount",
+                "timeConcentrationLevel",
+                "monthSolvedCount"
+                ]
+    # 카테고리형 feature들에 label encoding 수행하는 작업
     le = preprocessing.LabelEncoder()
     for category in categories:
-        if df[category].dtypes != "int":
-            df[category] = le.fit_transform(df[category])
-        df[category] = df[category].astype("category")
+        if category in df.columns and df[category].dtypes != "int":
+                df[category] = le.fit_transform(df[category])
+                df[category] = df[category].astype("category")
     return df
 
 
-# In[34]:
+# In[5]:
 
 
+start_time = time.time()
+
+data_dir = "/opt/ml/input/data/"
+
+train_data = pd.read_csv(os.path.join(data_dir, "train_data.csv"))
+test_data = pd.read_csv(os.path.join(data_dir, "test_data.csv"))
+
+print(f"elapsed: {time.time() - start_time: .3f} sec")
+
+
+# In[6]:
+
+
+# 유저별 sequence로 다루기 위해 아래와 같이 정렬
+# 전처리 및 feature_engineering 이후에 sort 실행
+
+start_time = time.time()
 train_data = feature_engineering(train_data)
+train_data.sort_values(by=["userID", "Timestamp"], inplace=True)
+print(f"train_data preprocessing elapsed: {time.time() - start_time: .3f} sec")
+
+start_time = time.time()
 test_data = feature_engineering(test_data)
+test_data.sort_values(by=["userID", "Timestamp"], inplace=True)
+print(f"test_data preprocessing elapsed: {time.time() - start_time: .3f} sec")
 
-
-# In[35]:
 
 
 # 사용할 Feature 설정
 # 캐글 솔루션에서 이렇게 feature 많을 때 Enter키로 구분하는데 보기가 편해서 적용했어요
 # (나중에 지우고 싶으면 바로 주석 처리해서 지워도 되서 좋은 듯)
-FEATS = ['KnowledgeTag',
-         'user_correct_answer', 
-         'user_total_answer', 
-         'user_acc', 
-         'test_mean', 
-         'test_sum', 
-         'tag_mean',
-         'tag_sum', 
-         'first_3']
+FEATS = [
+        #  "KnowledgeTag",
+         "user_correct_answer",
+         "user_total_answer",
+         "user_acc",
+         "test_mean",
+        #  "test_sum",
+         "tag_mean", 
+         "tag_sum",
+         "first_3", 
+         "year",
+         "month", 
+        #  "day",
+        #  "hour",
+        #  "minute",
+        #  "second",
+         "timeConcentrationRate",
+        #  "timeConcentrationCount",
+         "timeConcentrationLevel",
+         "monthAnswerRate",
+        #  "monthSolvedCount"
+         ]
+=======
+
 ########################################################### 여기서 모드 변경해주세요 ###########################################################
 train_test_split_mode = 1
 
@@ -185,32 +222,41 @@ train_test_split_mode_2:
     train: train data
     valid: test data에서 마지막에서 두번째 데이터까지 사용
 """
+start_time = time.time()
+
 if train_test_split_mode == 1:
     train, valid = train_test_split_mode_1(train_data)
     
-    X_train = train.drop(['answerCode'], axis=1)
-    y_train = train['answerCode']
+    X_train = train.drop(["answerCode"], axis=1)
+    y_train = train["answerCode"]
 
-    X_valid = valid.drop(['answerCode'], axis=1)
-    y_valid = valid['answerCode']
+    X_valid = valid.drop(["answerCode"], axis=1)
+    y_valid = valid["answerCode"]
 
 else:
     train, test, valid = train_test_split_mode_2(train_data, test_data)
-    X_train = train.drop(['answerCode'], axis=1)
-    y_train = train['answerCode']
+    X_train = train.drop(["answerCode"], axis=1)
+    y_train = train["answerCode"]
 
-    X_valid = valid.drop(['answerCode'], axis=1)
-    y_valid = valid['answerCode']
+    X_valid = valid.drop(["answerCode"], axis=1)
+    y_valid = valid["answerCode"]
+    
+print(f"elapsed: {time.time() - start_time: .3f} sec")
 
 
-# In[36]:
+# In[8]:
+=======
+
 
 
 cat_features = train[FEATS].columns[train[FEATS].dtypes == "category"].to_list()
 cat_features
 
 
-# In[37]:
+# In[9]:
+
+
+start_time = time.time()
 
 
 # CatBoostClassifier 사용
@@ -244,9 +290,13 @@ auc = roc_auc_score(y_valid, preds)
 
 print(f"VALID AUC : {auc} ACC : {acc}\n")
 
+print(f"elapsed: {time.time() - start_time: .3f}")
 
-# In[38]:
 
+# In[10]:
+
+
+start_time = time.time()
 
 result = permutation_importance(model, X_valid[FEATS], y_valid, scoring = "roc_auc", n_repeats=30, random_state=42)
 sorted_result = result.importances_mean.argsort()
@@ -256,7 +306,13 @@ plt.yticks(range(len(FEATS)), np.array(FEATS)[sorted_result])
 plt.title("permutation_importance")
 
 
-# In[39]:
+print(f"elapsed: {time.time() - start_time: .3f} sec")
+
+
+# In[11]:
+
+
+start_time = time.time()
 
 
 feature_importance = model.feature_importances_
@@ -267,7 +323,13 @@ plt.yticks(range(len(sorted_idx)), np.array(FEATS)[sorted_idx])
 plt.title("Feature Importance")
 
 
-# In[40]:
+print(f"elapsed: {time.time() - start_time: .3f} sec")
+
+
+# In[12]:
+
+
+start_time = time.time()
 
 
 test_data = test_data[test_data.answerCode != -1]  # -1 인 answerCode 제외
@@ -282,18 +344,26 @@ preds = model.predict_proba(X_test[FEATS])[:, 1]
 acc = accuracy_score(y_test, np.where(preds >= 0.5, 1, 0))
 auc = roc_auc_score(y_test, preds)
 
-print(f"VALID AUC : {auc} ACC : {acc}")
+print(f"TEST AUC : {auc} ACC : {acc}")
+
+print(f"elapsed: {time.time() - start_time: .3f} sec")
 
 
-# In[41]:
+# In[13]:
+
+
+start_time = time.time()
 
 
 test_data = test_data[test_data["userID"] != test_data["userID"].shift(-1)]
 test_data = test_data.drop(["answerCode"], axis=1)
 total_preds = model.predict_proba(X_test[FEATS])[:, 1]
 
+print(f"elapsed: {time.time() - start_time: .3f} sec")
 
-# In[42]:
+
+# In[14]:
+
 
 
 # SAVE OUTPUT
