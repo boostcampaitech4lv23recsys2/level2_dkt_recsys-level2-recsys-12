@@ -113,7 +113,7 @@ class Preprocess:
                 )
             )
         )
-        
+
         return group.values
 
     def load_train_data(self, file_name):
@@ -211,7 +211,7 @@ def get_loaders(args, train, valid):
 
 
 def get_loaders_kfold(args, data, sampler):
-    
+
     pin_memory = False
     dataloader = None
 
