@@ -42,8 +42,8 @@ import time
 
 """
 train_test_split_mode_1:
-    train: train data * ratio
-    valid: train data * (1 - ratio)
+    train: (train data의 userID 개수) * ratio 만큼의 사용자 데이터
+    valid: (train data의 userID 개수) * (1 - ratio) 만큼의 사용자 데이터
 """
 # train과 valid 데이터셋은 사용자 별로 묶어서 분리를 해주어야함
 random.seed(42)
@@ -74,8 +74,13 @@ def train_test_split_mode_1(df:pd.DataFrame, ratio=0.8, split=True):
 
 """
 train_test_split_mode_2:
-    train: train data
+    train: train data 전체 사용
     valid: test data에서 마지막에서 두번째 데이터까지 사용
+
+-> 따라서 train_test_split_mode_2는 학습에 사용되는 데이터가 train_test_split_mode_1보다 많기 때문에
+   성능이 더 높을 수 밖에 없습니다.
+   과적합은 걱정할 필요가 없는게, train_test_split_mode_2의 validation은 test데이터셋만을 사용하는데,
+   train데이터셋과 test데이터셋의 userID가 겹치지 않기 때문입니다.
 """
 def train_test_split_mode_2(train_df:pd.DataFrame, test_df:pd.DataFrame):
     valid = test_df[test_df["answerCode"] != -1]
