@@ -1,37 +1,43 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+# In[1]:
 
 
-import os
-import random
-import warnings
-
-import numpy as np
 # import packages
 import pandas as pd
-
+import numpy as np
+import warnings
+import random
+import os
 warnings.filterwarnings(action="ignore")
 
-import sys
+from catboost import CatBoostRegressor, CatBoostClassifier, Pool
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+from sklearn.metrics import roc_auc_score
+from sklearn.metrics import accuracy_score
+from sklearn import preprocessing
+
+from sklearn.inspection import permutation_importance
+
 # output csv에 시간 지정해주기 위함
 from datetime import datetime
 
-import matplotlib.pyplot as plt
-import seaborn as sns
-from catboost import CatBoostClassifier, CatBoostRegressor, Pool
-from sklearn import preprocessing
-from sklearn.inspection import permutation_importance
-from sklearn.metrics import accuracy_score, roc_auc_score
-
+import sys
 sys.path.append("../")
+from feature_engineering import *
+
 # 시간이 오래 걸리는 부분들에 대한 연산 시간 구하기 위함
 import time
 
-from feature_engineering import *
 
 # ### train_test_split_mode_1 / train_test_split_mode_2
 # docstring 부분을 참고해주세요!
+
+# In[2]:
 
 
 """
@@ -62,6 +68,10 @@ def train_test_split_mode_1(df:pd.DataFrame, ratio=0.8, split=True):
     valid = valid[valid["userID"] != valid["userID"].shift(-1)]
     return train, valid
 
+
+# In[3]:
+
+
 """
 train_test_split_mode_2:
     train: train data
@@ -70,8 +80,10 @@ train_test_split_mode_2:
 def train_test_split_mode_2(train_df:pd.DataFrame, test_df:pd.DataFrame):
     valid = test_df[test_df["answerCode"] != -1]
     valid = valid[valid["userID"] != valid["userID"].shift(-1)]
-    return train_df, test_df, valid
+    return train_df, valid
 
+
+# In[4]:
 
 
 def feature_engineering(df):
@@ -120,7 +132,6 @@ def feature_engineering(df):
     df2 = df2[["testId","first_3"]].drop_duplicates(["testId"])
     df = pd.merge(df, df2, on="testId", how="left")
     
-
     df = split_time(df)
     df = get_time_concentration(df)
     df = get_seoson_concentration(df)
@@ -179,6 +190,8 @@ test_data.sort_values(by=["userID", "Timestamp"], inplace=True)
 print(f"test_data preprocessing elapsed: {time.time() - start_time: .3f} sec")
 
 
+# In[7]:
+
 
 # 사용할 Feature 설정
 # 캐글 솔루션에서 이렇게 feature 많을 때 Enter키로 구분하는데 보기가 편해서 적용했어요
@@ -193,7 +206,7 @@ FEATS = [
          "tag_mean", 
          "tag_sum",
          "first_3", 
-         "year",
+        #  "year",
          "month", 
         #  "day",
         #  "hour",
@@ -205,8 +218,6 @@ FEATS = [
          "monthAnswerRate",
         #  "monthSolvedCount"
          ]
-=======
-
 ########################################################### 여기서 모드 변경해주세요 ###########################################################
 train_test_split_mode = 1
 
@@ -223,27 +234,20 @@ start_time = time.time()
 
 if train_test_split_mode == 1:
     train, valid = train_test_split_mode_1(train_data)
-    
-    X_train = train.drop(["answerCode"], axis=1)
-    y_train = train["answerCode"]
-
-    X_valid = valid.drop(["answerCode"], axis=1)
-    y_valid = valid["answerCode"]
 
 else:
-    train, test, valid = train_test_split_mode_2(train_data, test_data)
-    X_train = train.drop(["answerCode"], axis=1)
-    y_train = train["answerCode"]
+    train, valid = train_test_split_mode_2(train_data, test_data)
 
-    X_valid = valid.drop(["answerCode"], axis=1)
-    y_valid = valid["answerCode"]
+X_train = train.drop(["answerCode"], axis=1)
+y_train = train["answerCode"]
+
+X_valid = valid.drop(["answerCode"], axis=1)
+y_valid = valid["answerCode"]
     
 print(f"elapsed: {time.time() - start_time: .3f} sec")
 
 
 # In[8]:
-=======
-
 
 
 cat_features = train[FEATS].columns[train[FEATS].dtypes == "category"].to_list()
@@ -254,7 +258,6 @@ cat_features
 
 
 start_time = time.time()
-
 
 # CatBoostClassifier 사용
 params = {
@@ -284,7 +287,6 @@ model.fit(
 preds = model.predict_proba(X_valid[FEATS])[:,1]
 acc = accuracy_score(y_valid, np.where(preds >= 0.5, 1, 0))
 auc = roc_auc_score(y_valid, preds)
-
 print(f"VALID AUC : {auc} ACC : {acc}\n")
 
 print(f"elapsed: {time.time() - start_time: .3f}")
@@ -302,7 +304,6 @@ plt.barh(range(len(FEATS)), result.importances_mean[sorted_result], align="cente
 plt.yticks(range(len(FEATS)), np.array(FEATS)[sorted_result])
 plt.title("permutation_importance")
 
-
 print(f"elapsed: {time.time() - start_time: .3f} sec")
 
 
@@ -311,14 +312,12 @@ print(f"elapsed: {time.time() - start_time: .3f} sec")
 
 start_time = time.time()
 
-
 feature_importance = model.feature_importances_
 sorted_idx = np.argsort(feature_importance)
 fig = plt.figure(figsize=(12, 6))
 plt.barh(range(len(sorted_idx)), feature_importance[sorted_idx], align="center")
 plt.yticks(range(len(sorted_idx)), np.array(FEATS)[sorted_idx])
 plt.title("Feature Importance")
-
 
 print(f"elapsed: {time.time() - start_time: .3f} sec")
 
@@ -327,7 +326,6 @@ print(f"elapsed: {time.time() - start_time: .3f} sec")
 
 
 start_time = time.time()
-
 
 test_data = test_data[test_data.answerCode != -1]  # -1 인 answerCode 제외
 
@@ -340,7 +338,6 @@ X_test = test_data.drop(["answerCode"], axis=1)
 preds = model.predict_proba(X_test[FEATS])[:, 1]
 acc = accuracy_score(y_test, np.where(preds >= 0.5, 1, 0))
 auc = roc_auc_score(y_test, preds)
-
 print(f"TEST AUC : {auc} ACC : {acc}")
 
 print(f"elapsed: {time.time() - start_time: .3f} sec")
@@ -351,7 +348,6 @@ print(f"elapsed: {time.time() - start_time: .3f} sec")
 
 start_time = time.time()
 
-
 test_data = test_data[test_data["userID"] != test_data["userID"].shift(-1)]
 test_data = test_data.drop(["answerCode"], axis=1)
 total_preds = model.predict_proba(X_test[FEATS])[:, 1]
@@ -360,7 +356,6 @@ print(f"elapsed: {time.time() - start_time: .3f} sec")
 
 
 # In[14]:
-
 
 
 # SAVE OUTPUT
