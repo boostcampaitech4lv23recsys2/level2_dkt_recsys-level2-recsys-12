@@ -1,6 +1,7 @@
 import os
 
 import torch
+
 import wandb
 from args import parse_args
 from src import trainer
@@ -18,13 +19,14 @@ def main(args):
     preprocess.load_train_data(args.file_name)
     train_data = preprocess.get_train_data()
 
-    wandb.init(project="DKT_DKT", config=vars(args), entity="ai-tech-4-recsys-12")
-    wandb.name = (
-        f"{args.model}_{args.n_epochs}_{args.batch_size}_{args.lr}_{args.patience}"
-    )
     model = trainer.get_model(args).to(args.device)
 
     if not args.kfold:
+        wandb.init(project="DKT_LSTM", config=vars(args), entity="ai-tech-4-recsys-12")
+        wandb.run.name = (
+            f"{args.model}_{args.n_epochs}_{args.batch_size}_{args.lr}_{args.patience}"
+        )
+        wandb.config = vars(args)
         train_data, valid_data = preprocess.split_data(train_data)
         trainer.run(args, train_data, valid_data, model)
     else:
