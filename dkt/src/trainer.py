@@ -1,10 +1,12 @@
+import copy
 import math
 import os
 from datetime import datetime
 
 import torch
-import wandb
 from sklearn.model_selection import KFold
+
+import wandb
 
 from .criterion import get_criterion
 from .dataloader import get_loaders, get_loaders_kfold
@@ -81,13 +83,24 @@ def run_kfold(args, train_data, preprocess, model):
     kfold = KFold(n_splits=args.kfold, random_state=args.seed, shuffle=True)
 
     for fold, (train_idx, valid_idx) in enumerate(kfold.split(train_data)):
-        inner_model = model
+
+        inner_model = copy.deepcopy(model)
+
         train_data_fold, valid_data_fold = preprocess.split_data(train_data)
         # only when using warmup scheduler
         # args.total_steps = int(math.ceil(len(train_loader.dataset) / args.batch_size)) * (
         #     args.n_epochs
         # )
         # args.warmup_steps = args.total_steps // 10
+
+        # reset wandb for every fold
+        wandb.init(
+            project="DKT_LSTM_KFOLD", config=vars(args), entity="ai-tech-4-recsys-12"
+        )
+        wandb.run.name = f"Fold:{fold}_BatchSize:{args.batch_size}_LR:{args.lr}_Patience:{args.patience}"
+
+        # let users know which fold current fold is
+        print(f"#################### Fold number {fold} ####################\n")
 
         optimizer = get_optimizer(inner_model, args)
         scheduler = get_scheduler(optimizer, args)
@@ -126,9 +139,9 @@ def run_kfold(args, train_data, preprocess, model):
                 {
                     "epoch": epoch,
                     "train_loss_epoch": train_loss,
-                    "train_auc_epoch": train_auc,
+                    "train_auc": train_auc,
                     "train_acc_epoch": train_acc,
-                    "valid_auc_epoch": auc,
+                    "valid_auc": auc,
                     "valid_acc_epoch": acc,
                 }
             )
@@ -158,6 +171,9 @@ def run_kfold(args, train_data, preprocess, model):
             # scheduler
             if args.scheduler == "plateau":
                 scheduler.step(best_auc)
+
+        # finish wandb for every fold
+        wandb.finish()
 
 
 def train(train_loader, model, optimizer, scheduler, args):
