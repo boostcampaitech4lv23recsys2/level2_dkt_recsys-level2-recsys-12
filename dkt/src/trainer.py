@@ -97,7 +97,7 @@ def run_kfold(args, train_data, preprocess, model):
 
         # reset wandb for every fold
         wandb.init(
-            project="DKT_LSTMATTN_KFOLD",
+            project="DKT_LSTM_KFOLD",
             config=vars(args),
             entity="ai-tech-4-recsys-12",
         )
@@ -152,7 +152,8 @@ def run_kfold(args, train_data, preprocess, model):
             if auc > best_auc:
                 best_auc = auc
                 # torch.nn.DataParallel로 감싸진 경우 원래의 model을 가져옵니다.
-                model_to_save = inner_model
+                # model_to_save = inner_model
+                model_to_save = inner_model.module if hasattr(inner_model, "module") else inner_model
                 save_checkpoint(
                     {
                         "epoch": epoch + 1,
