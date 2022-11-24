@@ -1,12 +1,14 @@
 import copy
 import math
 import os
+import warnings
 from datetime import datetime
 
-import torch
-from sklearn.model_selection import KFold
+warnings.filterwarnings(action="ignore")
 
+import torch
 import wandb
+from sklearn.model_selection import KFold
 
 from .criterion import get_criterion
 from .dataloader import get_loaders, get_loaders_kfold
@@ -95,7 +97,9 @@ def run_kfold(args, train_data, preprocess, model):
 
         # reset wandb for every fold
         wandb.init(
-            project="DKT_LSTM_KFOLD", config=vars(args), entity="ai-tech-4-recsys-12"
+            project="DKT_LSTMATTN_KFOLD",
+            config=vars(args),
+            entity="ai-tech-4-recsys-12",
         )
         wandb.run.name = f"Fold:{fold}_BatchSize:{args.batch_size}_LR:{args.lr}_Patience:{args.patience}"
 
@@ -148,9 +152,7 @@ def run_kfold(args, train_data, preprocess, model):
             if auc > best_auc:
                 best_auc = auc
                 # torch.nn.DataParallel로 감싸진 경우 원래의 model을 가져옵니다.
-                model_to_save = (
-                    inner_model.module if hasattr(inner_model, "module") else model
-                )
+                model_to_save = inner_model
                 save_checkpoint(
                     {
                         "epoch": epoch + 1,
