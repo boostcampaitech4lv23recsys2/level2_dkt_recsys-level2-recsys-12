@@ -24,6 +24,11 @@ def main(args):
     model = trainer.get_model(args).to(args.device)
 
     if not args.kfold:
+        wandb.init(project="DKT_LSTM", config=vars(args), entity="ai-tech-4-recsys-12")
+        wandb.run.name = (
+            f"{args.model}_{args.n_epochs}_{args.batch_size}_{args.lr}_{args.patience}"
+        )
+        wandb.config = vars(args)
         train_data, valid_data = preprocess.split_data(train_data)
         trainer.run(args, train_data, valid_data, model)
     else:
