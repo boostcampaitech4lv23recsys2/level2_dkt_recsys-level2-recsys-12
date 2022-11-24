@@ -82,10 +82,10 @@ train_test_split_mode_2:
    과적합은 걱정할 필요가 없는게, train_test_split_mode_2의 validation은 test데이터셋만을 사용하는데,
    train데이터셋과 test데이터셋의 userID가 겹치지 않기 때문입니다.
 """
-def train_test_split_mode_2(train_df:pd.DataFrame, test_df:pd.DataFrame):
-    valid = test_df[test_df["answerCode"] != -1]
+def train_test_split_mode_2(train:pd.DataFrame, test:pd.DataFrame):
+    valid = test[test["answerCode"] != -1]
     valid = valid[valid["userID"] != valid["userID"].shift(-1)]
-    return train_df, valid
+    return train, valid
 
 
 # In[4]:
