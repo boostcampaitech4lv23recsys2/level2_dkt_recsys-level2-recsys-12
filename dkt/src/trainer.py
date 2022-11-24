@@ -139,9 +139,9 @@ def run_kfold(args, train_data, preprocess, model):
                 {
                     "epoch": epoch,
                     "train_loss_epoch": train_loss,
-                    "train_auc": train_auc,
+                    "train_auc_epoch": train_auc,
                     "train_acc_epoch": train_acc,
-                    "valid_auc": auc,
+                    "valid_auc_epoch": auc,
                     "valid_acc_epoch": acc,
                 }
             )
