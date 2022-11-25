@@ -78,7 +78,6 @@ class Preprocess:
         return df
 
     def __feature_engineering(self, df):
-        # TODO
         return df
 
     def load_data_from_file(self, file_name, is_train=True):

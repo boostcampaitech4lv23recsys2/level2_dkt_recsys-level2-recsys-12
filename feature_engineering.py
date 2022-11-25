@@ -1,5 +1,30 @@
 import numpy as np
 import pandas as pd
+from sklearn.cluster import KMeans
+
+
+# def clustering(
+#     items,
+#     n_clusters=27, 
+#     init='k-means++', 
+#     max_iter=300, 
+#     random_state=42
+# ):
+#     """ Clustering data """
+#     kmeans = KMeans()
+#     kmeans.fit(items)
+#     return kmeans.labels_
+
+# def get_clu_tag_item(df):
+#     """clustering tag and item"""
+#     new_df = df.copy()
+#     if "first3" not in df.columns:
+#         new_df=split_assessmentItemID(df)
+#     if "testAnswerRate" not in df.columns:
+#         new_df=get_groupby_test_features(df)
+#     new_df["clu_tag_item"]=clustering(new_df[["KnowledgeTag","first3","testAnswerRate"]])
+#     print(new_df["clu_tag_item"])
+#     return new_df
 
 def get_groupby_user_features(df):
     """AnswerRate and solvedCount groupby userID"""
@@ -16,12 +41,14 @@ def get_groupby_test_features(df):
     new_df = pd.merge(df, answer_rate, how="left", on="testId")
     return new_df
 
+
 def get_groupby_item_features(df):
     """AnswerRate and solvedCount groupby assessmentItemID"""
     answer_rate = df.groupby('assessmentItemID')["answerCode"].agg(["mean","count"])
     answer_rate.columns=["itemAnswerRate","itemSolvedLen"]
     new_df = pd.merge(df,answer_rate, how='left', on='assessmentItemID')
     return new_df
+
 
 def get_groupby_tag_features(df):
     """AnswerRate and solvedCount groupby KnowledgeTag"""
@@ -48,9 +75,11 @@ def split_time(data):
     return new_data.drop(["temp1", "temp2"], axis=1)
 
 
-def get_first3(data):
-    """Get first3 token from assessmentItemID"""
+def split_assessmentItemID(data):
+    """Split assessmentItemID into size=3 tokens"""
     data["first3"] = data["assessmentItemID"].apply(lambda x: x[1:4])
+    data["mid3"] = data["assessmentItemID"].apply(lambda x: x[4:7])
+    data["last3"] = data["assessmentItemID"].apply(lambda x: x[7:10])
     return data
 
 
@@ -102,16 +131,29 @@ def get_seoson_concentration(data):
     return new_df
 
 
+def get_clu_tag_item(df):
+    """clustering tag and item"""
+    new_df = df.copy()
+    if "first3" not in df.columns:
+        new_df=split_assessmentItemID(df)
+    if "testAnswerRate" not in df.columns:
+        new_df=get_groupby_test_features(df)
+    new_df["clu_tag_item"]=clustering(new_df[["KnowledgeTag","first3","testAnswerRate"]])
+    print(new_df["clu_tag_item"])
+    return new_df
+
+
 ADD_LIST = [
     get_groupby_user_features,
     get_groupby_test_features,
     get_groupby_tag_features,
     get_groupby_item_features,
     split_time,
-    get_first3,
+    split_assessmentItemID,
     get_time_concentration,
     get_user_log,
     get_seoson_concentration,
+    # get_clu_tag_item,
 ]
 DROP_LIST = []
 

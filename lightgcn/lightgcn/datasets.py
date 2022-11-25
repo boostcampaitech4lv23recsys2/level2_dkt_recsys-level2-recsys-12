@@ -1,10 +1,11 @@
 import os
-
+import sys
 import pandas as pd
 import torch
 from sklearn.model_selection import train_test_split
 
-from feature_engineering import lightgcn_feature_engineering
+sys.path.append(r"../")
+from feature_engineering import feature_engineering
 
 
 # code/feature_engineering.py
@@ -38,8 +39,8 @@ def load_data(basepath):
     path2 = os.path.join(basepath, "custom_test_data.csv")
     data1 = pd.read_csv(path1)
     data2 = pd.read_csv(path2)
-    data1 = lightgcn_feature_engineering(data1)
-    data2 = lightgcn_feature_engineering(data2)
+    data1 = feature_engineering(data1)
+    data2 = feature_engineering(data2)
     data = pd.concat([data1, data2])
     data.drop_duplicates(
         subset=["userID", "assessmentItemID"], keep="last", inplace=True
