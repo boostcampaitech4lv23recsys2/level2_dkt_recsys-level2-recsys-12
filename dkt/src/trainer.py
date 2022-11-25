@@ -45,16 +45,17 @@ def run(args, train_data, valid_data, model):
         auc, acc = validate(valid_loader, model, args)
 
         ### TODO: model save or early stopping
-        wandb.log(
-            {
-                "epoch": epoch,
-                "train_loss_epoch": train_loss,
-                "train_auc_epoch": train_auc,
-                "train_acc_epoch": train_acc,
-                "valid_auc_epoch": auc,
-                "valid_acc_epoch": acc,
-            }
-        )
+        if args.run_wandb:
+            wandb.log(
+                {
+                    "epoch": epoch,
+                    "train_loss": train_loss,
+                    "train_auc": train_auc,
+                    "train_acc": train_acc,
+                    "valid_auc": auc,
+                    "valid_acc": acc,
+                }
+            )
         if auc > best_auc:
             best_auc = auc
             # torch.nn.DataParallel로 감싸진 경우 원래의 model을 가져옵니다.
@@ -96,12 +97,13 @@ def run_kfold(args, train_data, preprocess, model):
         # args.warmup_steps = args.total_steps // 10
 
         # reset wandb for every fold
-        wandb.init(
-            project="DKT_LSTMATTN_KFOLD",
-            config=vars(args),
-            entity="ai-tech-4-recsys-12",
-        )
-        wandb.run.name = f"Fold:{fold}_BatchSize:{args.batch_size}_LR:{args.lr}_Patience:{args.patience}"
+        if args.run_wandb:
+            wandb.init( 
+                project="DKT_LSTMATTN_KFOLD",
+                config=vars(args),
+                entity="ai-tech-4-recsys-12",
+            )
+            wandb.run.name = f"Fold:{fold}_BatchSize:{args.batch_size}_LR:{args.lr}_Patience:{args.patience}"
 
         # let users know which fold current fold is
         print(f"#################### Fold number {fold} ####################\n")
@@ -139,20 +141,22 @@ def run_kfold(args, train_data, preprocess, model):
             auc, acc = validate(valid_loader, inner_model, args)
 
             ### TODO: model save or early stopping
-            wandb.log(
-                {
-                    "epoch": epoch,
-                    "train_loss_epoch": train_loss,
-                    "train_auc_epoch": train_auc,
-                    "train_acc_epoch": train_acc,
-                    "valid_auc_epoch": auc,
-                    "valid_acc_epoch": acc,
-                }
-            )
+            if args.run_wandb:
+                wandb.log(
+                    {
+                        "epoch": epoch,
+                        "train_loss_epoch": train_loss,
+                        "train_auc_epoch": train_auc,
+                        "train_acc_epoch": train_acc,
+                        "valid_auc_epoch": auc,
+                        "valid_acc_epoch": acc,
+                    }
+                )
             if auc > best_auc:
                 best_auc = auc
                 # torch.nn.DataParallel로 감싸진 경우 원래의 model을 가져옵니다.
-                model_to_save = inner_model
+                # model_to_save = inner_model
+                model_to_save = inner_model.module if hasattr(inner_model, "module") else inner_model
                 save_checkpoint(
                     {
                         "epoch": epoch + 1,
@@ -175,7 +179,8 @@ def run_kfold(args, train_data, preprocess, model):
                 scheduler.step(best_auc)
 
         # finish wandb for every fold
-        wandb.finish()
+        if args.run_wandb:
+            wandb.finish() 
 
 
 def train(train_loader, model, optimizer, scheduler, args):
