@@ -9,7 +9,7 @@ import torch
 import tqdm
 from sklearn.preprocessing import LabelEncoder
 
-
+DROP=[""]
 class Preprocess:
     def __init__(self, args):
         self.args = args
@@ -85,7 +85,7 @@ class Preprocess:
         df = pd.read_csv(csv_file_path)  # , nrows=100000)
         df = self.__feature_engineering(df)
         df = self.__preprocessing(df, is_train)
-
+        
         # 추후 feature를 embedding할 시에 embedding_layer의 input 크기를 결정할때 사용
 
         self.args.n_questions = len(

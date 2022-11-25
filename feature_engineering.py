@@ -131,16 +131,16 @@ def get_seoson_concentration(data):
     return new_df
 
 
-def get_clu_tag_item(df):
-    """clustering tag and item"""
-    new_df = df.copy()
-    if "first3" not in df.columns:
-        new_df=split_assessmentItemID(df)
-    if "testAnswerRate" not in df.columns:
-        new_df=get_groupby_test_features(df)
-    new_df["clu_tag_item"]=clustering(new_df[["KnowledgeTag","first3","testAnswerRate"]])
-    print(new_df["clu_tag_item"])
-    return new_df
+# def get_clu_tag_item(df):
+#     """clustering tag and item"""
+#     new_df = df.copy()
+#     if "first3" not in df.columns:
+#         new_df=split_assessmentItemID(df)
+#     if "testAnswerRate" not in df.columns:
+#         new_df=get_groupby_test_features(df)
+#     new_df["clu_tag_item"]=clustering(new_df[["KnowledgeTag","first3","testAnswerRate"]])
+#     print(new_df["clu_tag_item"])
+#     return new_df
 
 
 ADD_LIST = [
