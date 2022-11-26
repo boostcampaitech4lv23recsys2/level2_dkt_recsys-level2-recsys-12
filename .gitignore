@@ -21,6 +21,7 @@ wandb/
 weight/
 asset/
 output/
+catboost_info/
 
 ### JupyterNotebooks ###
 # gitignore template for Jupyter Notebooks
@@ -215,3 +216,4 @@ cython_debug/
 .ionide
 
 # End of https://www.toptal.com/developers/gitignore/api/python,visualstudiocode,jupyternotebooks
+

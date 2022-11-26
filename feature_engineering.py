@@ -1,34 +1,17 @@
-import numpy as np
+"""
+    feature_engineering 함수를 실행시키면 아래 함수들이 차례대로 실행됩니다. 실행 후 Feature들이 생성된 상태의 DataFrame이 반환됩니다.
+
+    get_groupby_user_features,
+    get_groupby_test_features,
+    get_groupby_tag_features,
+    get_groupby_item_features,
+    split_time,
+    split_assessmentItemID,
+    get_time_concentration,
+    get_user_log,
+    get_seoson_concentration,
+"""
 import pandas as pd
-<<<<<<< HEAD
-from sklearn.cluster import KMeans
-
-
-# def clustering(
-#     items,
-#     n_clusters=27, 
-#     init='k-means++', 
-#     max_iter=300, 
-#     random_state=42
-# ):
-#     """ Clustering data """
-#     kmeans = KMeans()
-#     kmeans.fit(items)
-#     return kmeans.labels_
-
-# def get_clu_tag_item(df):
-#     """clustering tag and item"""
-#     new_df = df.copy()
-#     if "first3" not in df.columns:
-#         new_df=split_assessmentItemID(df)
-#     if "testAnswerRate" not in df.columns:
-#         new_df=get_groupby_test_features(df)
-#     new_df["clu_tag_item"]=clustering(new_df[["KnowledgeTag","first3","testAnswerRate"]])
-#     print(new_df["clu_tag_item"])
-#     return new_df
-=======
-
->>>>>>> d4f2aba29d2055d574b546db101d302af9867411
 
 def get_groupby_user_features(df):
     """AnswerRate and solvedCount groupby userID"""
@@ -135,18 +118,6 @@ def get_seoson_concentration(data):
     return new_df
 
 
-# def get_clu_tag_item(df):
-#     """clustering tag and item"""
-#     new_df = df.copy()
-#     if "first3" not in df.columns:
-#         new_df=split_assessmentItemID(df)
-#     if "testAnswerRate" not in df.columns:
-#         new_df=get_groupby_test_features(df)
-#     new_df["clu_tag_item"]=clustering(new_df[["KnowledgeTag","first3","testAnswerRate"]])
-#     print(new_df["clu_tag_item"])
-#     return new_df
-
-
 ADD_LIST = [
     get_groupby_user_features,
     get_groupby_test_features,
@@ -157,15 +128,13 @@ ADD_LIST = [
     get_time_concentration,
     get_user_log,
     get_seoson_concentration,
-    # get_clu_tag_item,
 ]
-DROP_LIST = []
 
 
 def feature_engineering(df):
     """
-    Make features in ADD_LIST (not in DROP_LIST)
+    Make features in ADD_LIST
     """
     for func in ADD_LIST:
         df = func(df)
-    return df.drop(DROP_LIST, axis=1)
+    return df

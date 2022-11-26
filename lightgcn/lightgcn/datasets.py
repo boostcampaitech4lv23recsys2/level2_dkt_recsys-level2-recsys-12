@@ -4,12 +4,7 @@ import pandas as pd
 import torch
 from sklearn.model_selection import train_test_split
 
-<<<<<<< HEAD
-sys.path.append(r"../")
-=======
-import sys
 sys.path.append("../")
->>>>>>> d4f2aba29d2055d574b546db101d302af9867411
 from feature_engineering import feature_engineering
 
 

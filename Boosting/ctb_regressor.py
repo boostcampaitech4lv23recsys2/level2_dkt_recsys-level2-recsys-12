@@ -14,12 +14,10 @@ sys.path.append(r"../")
 from data_loader import ctb_data_loader
 from sklearn.model_selection import GridSearchCV, KFold, StratifiedKFold
 from sklearn.metrics import accuracy_score, roc_auc_score
-from sklearn.cluster import KMeans
 
 from catboost import CatBoostRegressor
 
 from datetime import datetime
-import numpy as np
 
 
 # In[2]:

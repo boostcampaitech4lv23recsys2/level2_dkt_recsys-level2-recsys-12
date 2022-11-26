@@ -14,13 +14,11 @@ sys.path.append(r"../")
 from data_loader import xgb_data_loader
 from sklearn.model_selection import GridSearchCV, KFold, StratifiedKFold
 from sklearn.metrics import accuracy_score, roc_auc_score
-from sklearn.cluster import KMeans
 
 
 from xgboost import XGBClassifier
 
 from datetime import datetime
-import numpy as np
 
 
 # # Load Preprocessed data
