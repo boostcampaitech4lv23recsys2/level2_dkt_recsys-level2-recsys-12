@@ -1,7 +1,7 @@
 import pandas as pd
 from sklearn.metrics import accuracy_score, roc_auc_score
 
-def get_accuracy(PRED_PATH = "XGB/XGB_grid_kfold_custom_submission_994629.csv"):
+def get_accuracy(PRED_PATH = "../output/XGB_ensemble-sw-0.05-0.7-0.07-0.18.csv"):
     threshold=0.5
     ANSWER_PATH = "../data/custom_answer.csv"
 

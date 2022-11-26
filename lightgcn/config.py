@@ -27,8 +27,8 @@ class CFG:
     pred_file = "submission_{}.csv".format(timestr)
 
     # build
-    embedding_dim = 64  # int
-    num_layers = 3  # int
+    embedding_dim = 32  # int
+    num_layers = 2  # int
     alpha = None  # Optional[Union[float, Tensor]]
     build_kwargs = {
         "top_k": 10,
@@ -37,7 +37,7 @@ class CFG:
 
     # train
     n_epoch = 653
-    learning_rate = 0.001
+    learning_rate = 0.01
     weight_basepath = "./weight"
     patience = 20
 

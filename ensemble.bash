@@ -1,1 +1,1 @@
-python ensemble.py --ENSEMBLE_FILES lgcn_sota,xgb_sota --ENSEMBLE_WEIGHT 0.7,0.3
+python ensemble.py --ENSEMBLE_FILES XGB_R,LGCN,CTB_R,LSTMATTN --ENSEMBLE_WEIGHT 0.05,0.7,0.07,0.18
