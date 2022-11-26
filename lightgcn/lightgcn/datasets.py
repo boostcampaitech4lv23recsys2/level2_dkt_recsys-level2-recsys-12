@@ -4,7 +4,12 @@ import pandas as pd
 import torch
 from sklearn.model_selection import train_test_split
 
+<<<<<<< HEAD
 sys.path.append(r"../")
+=======
+import sys
+sys.path.append("../")
+>>>>>>> d4f2aba29d2055d574b546db101d302af9867411
 from feature_engineering import feature_engineering
 
 
@@ -36,7 +41,7 @@ def prepare_dataset(device, basepath, verbose=True, logger=None, isTrain=False):
 
 def load_data(basepath):
     path1 = os.path.join(basepath, "train_data.csv")
-    path2 = os.path.join(basepath, "custom_test_data.csv")
+    path2 = os.path.join(basepath, "custom_answer.csv")
     data1 = pd.read_csv(path1)
     data2 = pd.read_csv(path2)
     data1 = feature_engineering(data1)

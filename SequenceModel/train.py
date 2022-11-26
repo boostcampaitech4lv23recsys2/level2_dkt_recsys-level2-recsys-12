@@ -9,7 +9,6 @@ from src.utils import setSeeds
 
 
 def main(args):
-    
 
     setSeeds(args.seed)
     args.device = "cuda" if torch.cuda.is_available() else "cpu"

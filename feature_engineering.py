@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+<<<<<<< HEAD
 from sklearn.cluster import KMeans
 
 
@@ -25,6 +26,9 @@ from sklearn.cluster import KMeans
 #     new_df["clu_tag_item"]=clustering(new_df[["KnowledgeTag","first3","testAnswerRate"]])
 #     print(new_df["clu_tag_item"])
 #     return new_df
+=======
+
+>>>>>>> d4f2aba29d2055d574b546db101d302af9867411
 
 def get_groupby_user_features(df):
     """AnswerRate and solvedCount groupby userID"""

@@ -155,7 +155,6 @@ def run_kfold(args, train_data, preprocess, model):
             if auc > best_auc:
                 best_auc = auc
                 # torch.nn.DataParallel로 감싸진 경우 원래의 model을 가져옵니다.
-                # model_to_save = inner_model
                 model_to_save = inner_model.module if hasattr(inner_model, "module") else inner_model
                 save_checkpoint(
                     {
