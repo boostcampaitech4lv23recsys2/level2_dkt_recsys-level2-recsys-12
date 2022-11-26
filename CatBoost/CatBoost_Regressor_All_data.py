@@ -158,58 +158,70 @@ cat_features
 # In[10]:
 
 
-for fold in range(n_fold):
-    print(f"\n----------------- Fold {fold} -----------------\n")
-    start_time = time.time()
+"""
+fold = False하면 k-fold를 사용하지 않습니다.
+전체 데이터셋을 학습하고 싶으면 아래에 normal = False를 normal = True로 변경해주시면 됩니다.
+fold = True를 하면 cat_models에 model이 저장됩니다. 
+"""
+fold = True
+if fold:
+    for fold in range(n_fold):
+        print(f"\n----------------- Fold {fold} -----------------\n")
+        start_time = time.time()
 
-    # CatBoostRegressor 사용
-    params = {
-        "iterations": 150,
-        "learning_rate": 0.1,  # 0.1
-        "eval_metric": "AUC",
-        "random_seed": 42,
-        # "logging_level": "Verbose", # 매 epoch마다 로그를 찍고 싶으면 "logging_level": "Verbose"로 변경
-        "early_stopping_rounds": 100,
-        "task_type": "GPU",
-        "depth":12,
-        "verbose":100
-    }
-    
-    model = CatBoostRegressor(
-        **params,
-        cat_features=cat_features,
-        allow_writing_files=False,
-    )
-    
-    train_idx, valid_idx = folds[fold]
-    X_train_fold, X_valid_fold, y_train_fold, y_valid_fold = X_train[FEATS].iloc[train_idx], X_train[FEATS].iloc[valid_idx], y_train.iloc[train_idx], y_train.iloc[valid_idx]
+        # CatBoostRegressor 사용
+        params = {
+            "iterations": 150,
+            "learning_rate": 0.1,  # 0.1
+            "eval_metric": "AUC",
+            "random_seed": 42,
+            # "logging_level": "Verbose", # 매 epoch마다 로그를 찍고 싶으면 "logging_level": "Verbose"로 변경
+            "early_stopping_rounds": 100,
+            "task_type": "GPU",
+            "depth":12,
+            "verbose":100
+        }
+        
+        model = CatBoostRegressor(
+            **params,
+            cat_features=cat_features,
+            allow_writing_files=False,
+        )
+        
+        train_idx, valid_idx = folds[fold]
+        X_train_fold, X_valid_fold, y_train_fold, y_valid_fold = X_train[FEATS].iloc[train_idx], X_train[FEATS].iloc[valid_idx], y_train.iloc[train_idx], y_train.iloc[valid_idx]
 
-    train_data = Pool(data=X_train_fold, label=y_train_fold, cat_features=cat_features)
-    valid_data = Pool(data=X_valid_fold, label=y_valid_fold, cat_features=cat_features)
+        train_data = Pool(data=X_train_fold, label=y_train_fold, cat_features=cat_features)
+        valid_data = Pool(data=X_valid_fold, label=y_valid_fold, cat_features=cat_features)
 
-    model.fit(
-        train_data,
-        eval_set=valid_data,
-        # plot=True, # plot 찍고 싶으면 주석 제거
-        use_best_model=True,
-    )
+        model.fit(
+            train_data,
+            eval_set=valid_data,
+            # plot=True, # plot 찍고 싶으면 주석 제거
+            use_best_model=True,
+        )
 
-    # 여기서 AUC 계산에 사용되는 X_valid는 X_valid_fold랑 다름. 
-    # 최종 성능 평가는 더 위에서 생성한 X_valid라는 별도의 고정된 데이터로 한다고 생각하면 됩니다.
-    cat_models.append(model)
-    preds = model.predict(X_valid[FEATS])
-    acc = accuracy_score(y_valid, np.where(preds >= 0.5, 1, 0))
-    auc = roc_auc_score(y_valid, preds)
+        # 여기서 AUC 계산에 사용되는 X_valid는 X_valid_fold랑 다름. 
+        # 최종 성능 평가는 더 위에서 생성한 X_valid라는 별도의 고정된 데이터로 한다고 생각하면 됩니다.
+        cat_models.append(model)
+        preds = model.predict(X_valid[FEATS])
+        acc = accuracy_score(y_valid, np.where(preds >= 0.5, 1, 0))
+        auc = roc_auc_score(y_valid, preds)
 
-    print(f"VALID AUC : {auc} ACC : {acc}\n")
+        print(f"VALID AUC : {auc} ACC : {acc}\n")
 
-    print(f"elapsed: {time.time() - start_time: .3f}")
+        print(f"elapsed: {time.time() - start_time: .3f}")
 
 
 # In[11]:
 
 
-# K-fold 없이 진행하고 싶으면
+"""
+여기서는 전체 데이터셋을 학습하고 싶을 때 normal = Ture로 설정하면
+model에 전체 데이터셋을 학습한 모델이 저장됩니다.
+
+참고: kfold는 cat_models라는 list에 fold별로 모델들이 별도로 저장되서 신경 안써도 됩니다.
+"""
 normal = False
 # 일반 성능: VALID AUC : 0.7499030745484736 ACC : 0.6841397849462365
 if normal:
