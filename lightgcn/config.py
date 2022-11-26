@@ -12,7 +12,7 @@ import time
 # ====================================================
 class CFG:
     use_cuda_if_available = True
-    user_wandb = True
+    user_wandb = False
     # wandb_kwargs = dict(project="dkt-gcn")
     wandb_kwargs = dict(project="DKT_LGCN", entity="ai-tech-4-recsys-12")
 
