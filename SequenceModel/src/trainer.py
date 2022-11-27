@@ -26,7 +26,7 @@ def run(args, train_data, valid_data, model):
     if len(augmented_train_data) != len(train_data):
         print(f"Data Augmentation applied. Train data {len(train_data)} -> {len(augmented_train_data)}\n")
     
-    train_loader, valid_loader = get_loaders(args, train_data, valid_data)
+    train_loader, valid_loader = get_loaders(args, augmented_train_data, valid_data)
 
     # only when using warmup scheduler
     args.total_steps = int(math.ceil(len(train_loader.dataset) / args.batch_size)) * (
@@ -99,11 +99,11 @@ def run_kfold(args, train_data, preprocess, model):
 
     kfold = KFold(n_splits=args.kfold, random_state=args.seed, shuffle=True)
 
-    for fold, (train_idx, valid_idx) in enumerate(kfold.split(train_data)):
+    for fold, (train_idx, valid_idx) in enumerate(kfold.split(augmented_train_data)):
 
         inner_model = copy.deepcopy(model)
 
-        train_data_fold, valid_data_fold = preprocess.split_data(train_data)
+        train_data_fold, valid_data_fold = preprocess.split_data(augmented_train_data)
         # only when using warmup scheduler
         # args.total_steps = int(math.ceil(len(train_loader.dataset) / args.batch_size)) * (
         #     args.n_epochs
@@ -130,13 +130,13 @@ def run_kfold(args, train_data, preprocess, model):
 
         train_loader = get_loaders_kfold(
             args,
-            train_data,
+            augmented_train_data,
             train_subsampler,
         )
 
         valid_loader = get_loaders_kfold(
             args,
-            train_data,
+            augmented_train_data,
             valid_subsampler,
         )
 
