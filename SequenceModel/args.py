@@ -71,15 +71,15 @@ def parse_args():
         "--scheduler", default="plateau", type=str, help="scheduler type"
     )
 
-    ### 추가 ###
+    ### Data Augmentation ###
     parser.add_argument(
-        "--window", default=False, type=bool, help="Arumentation window"
+        "--window", default=False, type=bool, help="Data Augmentation / True or False"
     )
     parser.add_argument(
-        "--shuffle", default=False, type=bool, help="Arumentation shuffle"
+        "--shuffle", default=False, type=bool, help="Data Augmentation / True or False"
     )
-    parser.add_argument("--stride", default=20, type=int, help="Arumentation stride") # default = max_seq_len
-    parser.add_argument("--shuffle_n", default=2, type=int, help="Arumentation shuffle")
+    parser.add_argument("--stride", default=20, type=int, help="Data Augmentation stride") # default = max_seq_len
+    parser.add_argument("--shuffle_n", default=2, type=int, help="Data Augmentation shuffle")
     args = parser.parse_args()
 
     return args
