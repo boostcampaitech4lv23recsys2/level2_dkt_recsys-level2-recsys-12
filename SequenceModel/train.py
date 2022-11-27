@@ -17,8 +17,6 @@ def main(args):
     preprocess.load_train_data(args.file_name)
     train_data = preprocess.get_train_data()
 
-
-    
     model = trainer.get_model(args).to(args.device)
 
     if not args.kfold:
