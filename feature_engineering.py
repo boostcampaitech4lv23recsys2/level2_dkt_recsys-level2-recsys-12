@@ -1,8 +1,6 @@
 import numpy as np
 import pandas as pd
 
-train = pd.read_csv("train_data.csv")
-
 
 def get_groupby_user_features(df):
     """AnswerRate and solvedCount groupby userID"""
