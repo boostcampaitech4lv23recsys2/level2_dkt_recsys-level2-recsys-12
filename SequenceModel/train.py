@@ -17,8 +17,7 @@ def main(args):
     preprocess.load_train_data(args.file_name)
     train_data = preprocess.get_train_data()
 
-    wandb_name = f"{args.model}_{args.n_epochs}_{args.batch_size}_{args.lr}_{args.patience}"
-    wandb.init(project="DKT_DKT", config=vars(args), entity="ai-tech-4-recsys-12", name = wandb_name)
+
     
     model = trainer.get_model(args).to(args.device)
 
