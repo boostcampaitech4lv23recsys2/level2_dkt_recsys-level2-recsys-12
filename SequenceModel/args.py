@@ -73,10 +73,10 @@ def parse_args():
 
     ### Data Augmentation ###
     parser.add_argument(
-        "--window", default=False, type=bool, help="Data Augmentation / True or False"
+        "--window", default=False, type=bool, help="Data Augmentation window / True or False"
     )
     parser.add_argument(
-        "--shuffle", default=False, type=bool, help="Data Augmentation / True or False"
+        "--shuffle", default=False, type=bool, help="Data Augmentation shuffle / True or False"
     )
     parser.add_argument("--stride", default=20, type=int, help="Data Augmentation stride") # default = max_seq_len
     parser.add_argument("--shuffle_n", default=2, type=int, help="Data Augmentation shuffle")
