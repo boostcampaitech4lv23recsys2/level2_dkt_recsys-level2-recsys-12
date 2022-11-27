@@ -73,7 +73,7 @@ def parse_args():
 
     ### 추가 ###
     parser.add_argument(
-        "--window", default=True, type=bool, help="Arumentation window"
+        "--window", default=False, type=bool, help="Arumentation window"
     )
     parser.add_argument(
         "--shuffle", default=False, type=bool, help="Arumentation shuffle"
