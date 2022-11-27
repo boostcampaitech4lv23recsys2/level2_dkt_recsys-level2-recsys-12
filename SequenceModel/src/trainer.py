@@ -3,7 +3,7 @@ import math
 import os
 import warnings
 from datetime import datetime
-
+import gc
 warnings.filterwarnings(action="ignore")
 
 import torch
@@ -11,7 +11,7 @@ import wandb
 from sklearn.model_selection import KFold
 
 from .criterion import get_criterion
-from .dataloader import get_loaders, get_loaders_kfold
+from .dataloader import get_loaders, get_loaders_kfold, data_augmentation
 from .metric import get_metric
 from .model import LSTM, LSTMATTN, Bert
 from .optimizer import get_optimizer
@@ -19,6 +19,13 @@ from .scheduler import get_scheduler
 
 
 def run(args, train_data, valid_data, model):
+    # 캐시 메모리 비우기 및 가비지 컬렉터 가동!
+    torch.cuda.empty_cache()
+    gc.collect()
+    augmented_train_data = data_augmentation(train_data, args)
+    if len(augmented_train_data) != len(train_data):
+        print(f"Data Augmentation applied. Train data {len(train_data)} -> {len(augmented_train_data)}\n")
+    
     train_loader, valid_loader = get_loaders(args, train_data, valid_data)
 
     # only when using warmup scheduler
@@ -83,6 +90,13 @@ def run(args, train_data, valid_data, model):
 
 
 def run_kfold(args, train_data, preprocess, model):
+    # 캐시 메모리 비우기 및 가비지 컬렉터 가동!
+    torch.cuda.empty_cache()
+    gc.collect()
+    augmented_train_data = data_augmentation(train_data, args)
+    if len(augmented_train_data) != len(train_data):
+        print(f"Data Augmentation applied. Train data {len(train_data)} -> {len(augmented_train_data)}\n")
+
     kfold = KFold(n_splits=args.kfold, random_state=args.seed, shuffle=True)
 
     for fold, (train_idx, valid_idx) in enumerate(kfold.split(train_data)):
