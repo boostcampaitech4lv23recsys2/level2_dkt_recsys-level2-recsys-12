@@ -201,4 +201,21 @@ def ctb_data_loader(IS_CUSTOM=False,USE_VALID=True, DROPS=[]):
     return x_train, x_valid, y_train, y_valid, test
 
 
+################################# LGBM #################################
+def lgbm_data_loader(IS_CUSTOM=False,USE_VALID=True, DROPS=[], valid_len=3):
+    _train, _test = load_data(IS_CUSTOM=IS_CUSTOM)
+    _df = get_entire_data(_train, _test)
+    df = get_features(_df).drop(DROPS, axis=1)
+    for col in df.columns:
+        if df[col].dtype=="object":
+            df[col]=df[col].astype(float)
+    train, valid, test = split_train_valid_test_categorical(df, valid_len=5)
+    if not USE_VALID:
+        train = pd.concat([train,valid])
+        valid = valid.drop([val for val in valid.index], axis=0)
+    y_train = train["answerCode"]
+    train = train.drop(["answerCode"], axis=1)
+    y_valid = valid["answerCode"]
+    valid = valid.drop(["answerCode"], axis=1)
+    return train, valid, y_train, y_valid, test
 
