@@ -38,15 +38,19 @@ def get_features(data):
     return fe.feature_engineering(data)
 
 
-def split_train_valid_test_categorical(df):
+def split_train_valid_test_categorical(df, valid_len=3):
     """
     카테고리형 모델에 적용할 수 있게 train, test, valid를 분리합니다.
     input df : 전체 데이터셋
     """
     idx = (df["answerCode"]==-1).values
     test = df[idx]
-    valid = df[np.append(idx,False)[1:]]
-    train = df[~(idx|np.append(idx, False)[1:])]
+    val_idx = df["answerCode"].isna().values
+    for i in range(valid_len):
+        idx = np.append(idx, False)[1:]
+        val_idx = val_idx | idx
+    valid = df[val_idx]
+    train = df[~(val_idx|(df["answerCode"]==-1))]
     return train, valid, test
 
 ################################# XGBoost #################################
@@ -67,7 +71,7 @@ def xgb_preprocessing(data):
     return data
 
 
-def xgb_data_loader(IS_CUSTOM=False,USE_VALID=True, DROPS=[]):
+def xgb_data_loader(IS_CUSTOM=False,USE_VALID=True, DROPS=[], valid_len=3):
     """
     Load and preprocess data to use xgboost
 
@@ -79,7 +83,7 @@ def xgb_data_loader(IS_CUSTOM=False,USE_VALID=True, DROPS=[]):
     _train, _test = load_data(IS_CUSTOM=IS_CUSTOM)
     entire_data = get_entire_data(_train, _test)
     df = get_features(entire_data).drop(DROPS, axis=1)
-    train, valid, test = split_train_valid_test_categorical(df)
+    train, valid, test = split_train_valid_test_categorical(df,valid_len=valid_len)
     if not USE_VALID:
         train = pd.concat([train,valid])
         valid = valid.drop([val for val in valid.index], axis=0)
@@ -108,7 +112,7 @@ def print_variance_ratio(pca, only_sum = False):
     print('sum of variance_ratio: ', np.sum(pca.explained_variance_ratio_))
 
 
-def xgb_PCA_data_loader(IS_CUSTOM=False,USE_VALID=True, DROPS=[], n_components=5):
+def xgb_PCA_data_loader(IS_CUSTOM=False,USE_VALID=True, DROPS=[], n_components=5, valid_len=3):
     """
     Load and preprocess data to use xgboost
 
@@ -128,7 +132,7 @@ def xgb_PCA_data_loader(IS_CUSTOM=False,USE_VALID=True, DROPS=[], n_components=5
 
     print("Split data..........................................")
 
-    train, valid, test = split_train_valid_test_categorical(df)
+    train, valid, test = split_train_valid_test_categorical(df,valid_len=valid_len)
     if not USE_VALID:
         train = pd.concat([train,valid])
         valid = valid.drop([val for val in valid.index], axis=0)

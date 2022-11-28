@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[6]:
 
 
 import pandas as pd
@@ -11,10 +11,9 @@ import os
 import sys
 
 sys.path.append(r"../")
-from data_loader import xgb_data_loader
+from data_loader import xgb_data_loader, xgb_PCA_data_loader
 from sklearn.model_selection import GridSearchCV, KFold, StratifiedKFold
 from sklearn.metrics import accuracy_score, roc_auc_score
-
 
 from xgboost import XGBClassifier
 
@@ -23,11 +22,12 @@ from datetime import datetime
 
 # # Load Preprocessed data
 
-# In[2]:
+# In[4]:
 
 
 IS_CUSTOM = True
 USE_VALID = True
+n_components = 0
 DROPS = [
     'assessmentItemID','testId','Timestamp','year','day','minute','second',
     # 'userID',
@@ -40,12 +40,12 @@ DROPS = [
     # 'timeConcentrationRate',
     # 'monthAnswerRate',
 
-    'userSolvedLen',
-    'testSolvedLen',
-    'tagSolvedLen',
-    'itemSolvedLen',
-    'timeConcentrationCount',
-    'monthSolvedCount',
+    # 'userSolvedLen',
+    # 'testSolvedLen',
+    # 'tagSolvedLen',
+    # 'itemSolvedLen',
+    # 'timeConcentrationCount',
+    # 'monthSolvedCount',
 
     # 'userSolvedSum',
     # 'itemSolvedSum',
@@ -74,12 +74,15 @@ DROPS = [
     # 'user_total_answer',
     # 'user_acc',
     ]
-x_train, x_valid, y_train, y_valid, test = xgb_data_loader(IS_CUSTOM=IS_CUSTOM,USE_VALID=USE_VALID,DROPS=DROPS)
+if n_components:
+    x_train, x_valid, y_train, y_valid, test = xgb_PCA_data_loader(IS_CUSTOM=IS_CUSTOM,USE_VALID=USE_VALID,DROPS=DROPS, n_components=n_components)
+else:
+    x_train, x_valid, y_train, y_valid, test = xgb_data_loader(IS_CUSTOM=IS_CUSTOM,USE_VALID=USE_VALID,DROPS=DROPS)
 
 
 # # XGBClassifier
 
-# In[3]:
+# In[7]:
 
 
 model = XGBClassifier(tree_method="gpu_hist", gpu_id=0)
@@ -123,7 +126,7 @@ gcv = GridSearchCV(
 )
 
 
-# In[4]:
+# In[8]:
 
 
 if USE_VALID:
@@ -135,7 +138,7 @@ print("final params", gcv.best_params_)
 print("best score", gcv.best_score_)
 
 
-# In[5]:
+# In[9]:
 
 
 # SAVE OUTPUT
@@ -157,7 +160,7 @@ with open(write_path, "w", encoding="utf8") as w:
         w.write("{},{}\n".format(id, p))
 
 
-# In[6]:
+# In[10]:
 
 
 def get_accuracy(PRED_PATH=file_name):
@@ -172,21 +175,21 @@ def get_accuracy(PRED_PATH=file_name):
     return f"accuracy_score: {accuracy_score(y,y_pred.apply(lambda x: 1 if x > threshold else 0))}\nroc  auc_score: {roc_auc_score(y,y_pred)}"
 
 
-# In[7]:
+# In[11]:
 
 
 if IS_CUSTOM:
     print(get_accuracy("output/" + file_name))
 
 
-# In[8]:
+# In[12]:
 
 
 from xgboost import plot_importance
 plot_importance(model)
 
 
-# In[9]:
+# In[13]:
 
 
 ft_importance_values = model.feature_importances_
@@ -200,6 +203,30 @@ plt.figure(figsize=(8,6))
 plt.title('Feature Importance Top 20')
 sns.barplot(x=ft_top20, y=ft_top20.index)
 plt.show()
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
 
 
 # In[ ]:

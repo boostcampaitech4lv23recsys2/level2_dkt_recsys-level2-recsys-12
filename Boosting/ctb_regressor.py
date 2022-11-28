@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[34]:
 
 
 import pandas as pd
@@ -20,7 +20,7 @@ from catboost import CatBoostRegressor
 from datetime import datetime
 
 
-# In[2]:
+# In[35]:
 
 
 IS_CUSTOM = True
@@ -75,7 +75,7 @@ DROPS = [
 
 # # CTB preprocessing
 
-# In[3]:
+# In[36]:
 
 
 x_train, x_valid, y_train, y_valid, test = ctb_data_loader(IS_CUSTOM=IS_CUSTOM, USE_VALID=USE_VALID, DROPS=DROPS)
@@ -84,7 +84,7 @@ cat_features = x_train.columns[x_train.nunique()<200].to_list()
 
 # # CatBoostRegressor
 
-# In[4]:
+# In[37]:
 
 
 model = CatBoostRegressor(cat_features=cat_features, task_type="GPU", leaf_estimation_iterations=10, od_type="Iter", logging_level="Silent")
@@ -120,7 +120,7 @@ gcv = GridSearchCV(
 )
 
 
-# In[5]:
+# In[38]:
 
 
 show=False
@@ -133,7 +133,7 @@ print("final params", gcv.best_params_)
 print("best score", gcv.best_score_)
 
 
-# In[6]:
+# In[39]:
 
 
 # SAVE OUTPUT
@@ -155,7 +155,7 @@ with open(write_path, "w", encoding="utf8") as w:
         w.write("{},{}\n".format(id, p))
 
 
-# In[7]:
+# In[40]:
 
 
 def get_accuracy(PRED_PATH=file_name):
@@ -170,14 +170,14 @@ def get_accuracy(PRED_PATH=file_name):
     return f"accuracy_score: {accuracy_score(y,y_pred.apply(lambda x: 1 if x > threshold else 0))}\nroc  auc_score: {roc_auc_score(y,y_pred)}"
 
 
-# In[8]:
+# In[41]:
 
 
 if IS_CUSTOM:
     print(get_accuracy("output/" + file_name))
 
 
-# In[9]:
+# In[42]:
 
 
 ft_importance_values = model.feature_importances_

@@ -21,6 +21,8 @@ from datetime import datetime
 
 
 # In[2]:
+
+
 IS_CUSTOM = True
 USE_VALID = True
 DROPS = [
@@ -69,6 +71,8 @@ DROPS = [
     # 'user_total_answer',
     # 'user_acc',
     ]
+
+
 # # CTB preprocessing
 
 # In[3]:
