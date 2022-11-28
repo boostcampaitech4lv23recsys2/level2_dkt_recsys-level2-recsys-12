@@ -17,10 +17,14 @@ wandb/
 # pt
 *.pt
 
+# bash
+*.sh
+
 # folders
 weight/
 asset/
 output/
+catboost_info/
 
 ### JupyterNotebooks ###
 # gitignore template for Jupyter Notebooks

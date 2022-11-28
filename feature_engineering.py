@@ -1,34 +1,70 @@
-import numpy as np
+"""
+    feature_engineering 함수를 실행시키면 아래 함수들이 차례대로 실행됩니다. 실행 후 Feature들이 생성된 상태의 DataFrame이 반환됩니다.
+
+    get_groupby_user_features,
+    get_groupby_test_features,
+    get_groupby_tag_features,
+    get_groupby_item_features,
+    split_time,
+    split_assessmentItemID,
+    get_time_concentration,
+    get_user_log,
+    get_seoson_concentration,
+"""
 import pandas as pd
+
+def get_statistic_value(df, col, target):
+    """Get target`s mean, count, var, sum, median groupby col"""
+    statistics = ["mean", "count", "sum", "var", "median"]
+    statistic_df = df.groupby(col)[target].agg(statistics)
+    statistic_df.columns = [col+"_"+target+"_"+i for i in statistics]
+    new_df = pd.merge(df, statistic_df,how="left",on=col)
+    return new_df
 
 
 def get_groupby_user_features(df):
-    """AnswerRate and solvedCount groupby userID"""
-    answer_rate = df.groupby("userID")["answerCode"].agg(["mean", "count"])
-    answer_rate.columns = ["userAnswerRate", "userSolvedLen"]
-    new_df = pd.merge(df, answer_rate, how="left", on="userID")
+    """Get statistic features / user, answerCode"""
+    new_df = get_statistic_value(df, "userID","answerCode")
     return new_df
 
 
 def get_groupby_test_features(df):
-    """AnswerRate and solvedCount groupby testId"""
-    answer_rate = df.groupby("testId")["answerCode"].agg(["mean", "count"])
-    answer_rate.columns = ["testAnswerRate", "testSolvedLen"]
-    new_df = pd.merge(df, answer_rate, how="left", on="testId")
+    """Get statistic features / test, answerCode"""
+    new_df = get_statistic_value(df, "testId","answerCode")
+    return new_df
+
+
+def get_groupby_item_features(df):
+    """Get statistic features / item, answerCode"""
+    new_df = get_statistic_value(df, "assessmentItemID","answerCode")
     return new_df
 
 
 def get_groupby_tag_features(df):
-    """AnswerRate and solvedCount groupby KnowledgeTag"""
-    answer_rate = df.groupby("KnowledgeTag")["answerCode"].agg(["mean", "count"])
-    answer_rate.columns = ["tagAnswerRate", "tagSolvedLen"]
-    new_df = pd.merge(df, answer_rate, how="left", on="KnowledgeTag")
+    """Get statistic features / tag, answerCode"""
+    new_df = get_statistic_value(df, "KnowledgeTag","answerCode")
     return new_df
 
 
-def split_time(data):
+def get_groupby_hour_features(df):
+    """Get statistic features / hour, answerCode"""
+    if "hour" not in df.columns:
+        df = split_time(df)
+    new_df = get_statistic_value(df, "hour","answerCode")
+    return new_df
+
+
+def get_groupby_month_features(df):
+    """Get statistic features / month, answerCode"""
+    if "month" not in df.columns:
+        df = split_time(df)
+    new_df = get_statistic_value(df, "month","answerCode")
+    return new_df
+
+
+def split_time(df):
     """Split Timestamp into year, month, day, hour, minute and second"""
-    new_data = data.copy()
+    new_data = df.copy()
     new_data["temp1"] = new_data["Timestamp"].apply(lambda x: x.split()[0])
     new_data["temp2"] = new_data["Timestamp"].apply(lambda x: x.split()[1])
 
@@ -43,13 +79,15 @@ def split_time(data):
     return new_data.drop(["temp1", "temp2"], axis=1)
 
 
-def get_first3(data):
-    """Get first3 token from assessmentItemID"""
-    data["first3"] = data["assessmentItemID"].apply(lambda x: x[1:4])
-    return data
+def split_assessmentItemID(df):
+    """Split assessmentItemID into size=3 tokens"""
+    df["first3"] = df["assessmentItemID"].apply(lambda x: x[1:4])
+    df["mid3"] = df["assessmentItemID"].apply(lambda x: x[4:7])
+    df["last3"] = df["assessmentItemID"].apply(lambda x: x[7:10])
+    return df
 
 
-def get_time_concentration(data):
+def get_time_concentration(df):
     """
     Get answerRate and concentrationLevel groupby hour.
     over 0.65 -> 2
@@ -57,66 +95,57 @@ def get_time_concentration(data):
     less 0.63 -> 0
     Count value of user groupby concentrationLevel = 1:2:2
     """
-    if "hour" not in data.columns:
-        data = split_time(data)
-    timeConcentration = data.groupby("hour")["answerCode"].agg(["mean", "count"])
-    timeConcentration.columns = ["timeConcentrationRate", "timeConcentrationCount"]
-    new_df = pd.merge(data, timeConcentration, how="left", on="hour")
-    new_df["timeConcentrationLevel"] = new_df["timeConcentrationRate"].apply(
-        lambda x: 2 if x > 0.65 else 0 if x < 0.63 else 1
-    )
+    new_df = get_groupby_hour_features(df)
+    new_df["hour_answerCode_Level"] = new_df["hour_answerCode_mean"].apply(lambda x: 2 if x > 0.65 else 0 if x < 0.63 else 1)
     return new_df
 
 
-def get_user_log(data):
+def get_user_log(df):
     """
     get features about user`s prev solved problems(about user`s history).
     user_correct_answer : Number of correct answers to previously solved questions by the user
     user_total_answer : Number of previous problems solved by the user
     user_acc : Answer rate of previous problems solved by the user
     """
-    data["user_correct_answer"] = data.groupby("userID")["answerCode"].transform(
+    df["user_correct_answer"] = df.groupby("userID")["answerCode"].transform(
         lambda x: x.cumsum().shift(1)
     )
-    data["user_total_answer"] = data.groupby("userID")["answerCode"].cumcount()
-    data["user_acc"] = data["user_correct_answer"] / data["user_total_answer"]
-    return data
+    df["user_total_answer"] = df.groupby("userID")["answerCode"].cumcount()
+    df["user_acc"] = df["user_correct_answer"] / df["user_total_answer"]
+    return df
 
 
-def get_seoson_concentration(data):
+def get_seoson_concentration(df):
     """
     Get features abount month
     monthAnswerRate : Monthly correct answer rate
     monthSolvedCount : Monthly solved count
     """
-    if "month" not in data.columns:
-        data = split_time(data)
-    groupby_month = data.groupby("month")["answerCode"].agg(["mean", "count"])
-    groupby_month.columns = ["monthAnswerRate", "monthSolvedCount"]
-    new_df = pd.merge(data, groupby_month, how="left", on="month")
+    new_df = get_groupby_month_features(df)
     return new_df
 
 
 ADD_LIST = [
     get_groupby_user_features,
     get_groupby_test_features,
+    get_groupby_item_features,
     get_groupby_tag_features,
-    split_time,
-    get_first3,
-    get_time_concentration,
     get_user_log,
+    split_assessmentItemID,
+    split_time,
+    get_time_concentration,
     get_seoson_concentration,
 ]
-DROP_LIST = ["assessmentItemID", "testId", "Timestamp"]
 
 
 def feature_engineering(df):
     """
-    make features in ADD_LIST (not in DROP_LIST)
+    Make features in ADD_LIST
     """
     for func in ADD_LIST:
         df = func(df)
-    return df.drop(DROP_LIST, axis=1)
+    return df
+
 
 
 #####################################################################
@@ -124,7 +153,7 @@ def feature_engineering(df):
 
 # ADD FUNCTIONS YOU WANT TO APPLY
 SEQ_ADD_LIST = [
-    get_first3,
+    split_assessmentItemID,
 ]
 # ADD COLUMNS YOU WANT TO DROP
 SEQ_DROP_LIST = []
