@@ -117,3 +117,34 @@ def feature_engineering(df):
     for func in ADD_LIST:
         df = func(df)
     return df.drop(DROP_LIST, axis=1)
+
+
+#####################################################################
+########################### SequneceModel ###########################
+
+# ADD FUNCTIONS YOU WANT TO APPLY
+SEQ_ADD_LIST = [
+    get_first3,
+]
+# ADD COLUMNS YOU WANT TO DROP
+SEQ_DROP_LIST = []
+# ADD COLUMNS WHOSE TYPE IS CATEGOCY
+SEQ_CATE_COLS = [
+    "assessmentItemID",
+    "testId",
+    "KnowledgeTag",
+    "first3",
+]
+
+# FEATURE ENGINEERING FUNCTION FOR SEQUENCE MODEL
+def seq_feature_engineering(df):
+    """
+    make features in SEQ_ADD_LIST (not in SEQ_DROP_LIST)
+    """
+    for func in SEQ_ADD_LIST:
+        df = func(df)
+    return df.drop(SEQ_DROP_LIST, axis=1), SEQ_CATE_COLS
+
+
+#####################################################################
+#####################################################################
