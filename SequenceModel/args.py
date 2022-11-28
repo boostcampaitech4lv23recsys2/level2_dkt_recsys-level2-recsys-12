@@ -65,7 +65,7 @@ def parse_args():
     parser.add_argument("--run_wandb", default=False, type=bool, help="option for running wandb")
 
     ### 중요 ###
-    parser.add_argument("--model", default="lstm", type=str, help="model type")
+    parser.add_argument("--model", default="lstm", type=str, help="model type(lstm, lstmattn, bert, saint, lastquery")
     parser.add_argument("--optimizer", default="adam", type=str, help="optimizer type")
     parser.add_argument(
         "--scheduler", default="plateau", type=str, help="scheduler type"
@@ -73,7 +73,7 @@ def parse_args():
 
     ### Data Augmentation ###
     parser.add_argument(
-        "--window", default=False, type=bool, help="Data Augmentation window / True or False"
+        "--window", default=True, type=bool, help="Data Augmentation window / True or False"
     )
     parser.add_argument(
         "--shuffle", default=False, type=bool, help="Data Augmentation shuffle / True or False"
