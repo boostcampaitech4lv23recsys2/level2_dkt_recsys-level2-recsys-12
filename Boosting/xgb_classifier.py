@@ -26,33 +26,53 @@ from datetime import datetime
 # In[2]:
 
 
-IS_CUSTOM = False
-USE_VALID = False
+IS_CUSTOM = True
+USE_VALID = True
 DROPS = [
-        "assessmentItemID", "testId", "Timestamp",'year', 'day', 'minute', 'second', 
-        # 'userID',
-        # 'KnowledgeTag',
-        # 'userAnswerRate',
-        # 'userSolvedLen',
-        # 'testAnswerRate',
-        # 'testSolvedLen', 
-        # 'tagAnswerRate', 
-        # 'tagSolvedLen',
-        # 'itemAnswerRate', 
-        # 'itemSolvedLen', 
-        # 'month', 
-        # 'hour',
-        # 'first3', 
-        # 'mid3', 
-        # 'last3', 
-        # 'timeConcentrationRate',
-        # 'timeConcentrationCount', 
-        # 'timeConcentrationLevel',
-        # 'user_correct_answer', 
-        # 'user_total_answer', 
-        # 'user_acc',
-        # 'monthAnswerRate', 
-        # 'monthSolvedCount'
+    'assessmentItemID','testId','Timestamp','year','day','minute','second',
+    # 'userID',
+    # 'KnowledgeTag',
+    
+    # 'userAnswerRate',
+    # 'tagAnswerRate',
+    # 'itemAnswerRate',
+    # 'testAnswerRate',
+    # 'timeConcentrationRate',
+    # 'monthAnswerRate',
+
+    'userSolvedLen',
+    'testSolvedLen',
+    'tagSolvedLen',
+    'itemSolvedLen',
+    'timeConcentrationCount',
+    'monthSolvedCount',
+
+    # 'userSolvedSum',
+    # 'itemSolvedSum',
+    # 'testSolvedSum',
+    # 'tagSolvedSum',
+    # 'timeConcentraionSum',
+    # 'monthSolvedSum',
+
+    # 'testSolvedVar',
+    # 'userSolvedVar',
+    # 'tagSolvedVar',
+    # 'itemSolvedVar',
+    # 'timeConcentrationVar',
+    # 'monthSolvedVar',
+
+    # 'timeConcentrationLevel',
+
+    # 'month',
+    # 'hour',
+
+    # 'first3',
+    # 'mid3',
+    # 'last3',
+
+    # 'user_correct_answer',
+    # 'user_total_answer',
+    # 'user_acc',
     ]
 x_train, x_valid, y_train, y_valid, test = xgb_data_loader(IS_CUSTOM=IS_CUSTOM,USE_VALID=USE_VALID,DROPS=DROPS)
 
