@@ -49,6 +49,8 @@ def main(args):
         trainer.run(args, train_data, valid_data, model)
     # K-FOLD
     else:
+        if args.run_wandb:
+            wandb.login()
         trainer.run_kfold(args, train_data, preprocess, model)
 
 
