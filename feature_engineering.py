@@ -19,13 +19,15 @@ def make_datetime(val):
     return datetime(*list(map(int, a.split('-'))), *list(map(int, b.split(':'))))
 
 
-def get_statistic_value(df, col, target):
-    """Get target`s mean, count, var, sum, median groupby col"""
+def get_statistic_value(df:pd.DataFrame, group:list, target:str="answerCode")->pd.DataFrame:
+    """Get target`s mean, count, var, sum, median groupby group"""
+    if type(group) == str:
+        group = [group]
     statistics = ["mean", "count", "sum", "var", "median"]
-    statistic_df = df.groupby(col)[target].agg(statistics)
-    statistic_df.columns = [col+"_"+target+"_"+i for i in statistics]
-    new_df = pd.merge(df, statistic_df,how="left",on=col)
-    return new_df
+    new_df = df.groupby(group)[target].agg(statistics)
+    new_df.columns = ["_".join(group+[target,i]) for i in statistics]
+    return pd.merge(left=df, right=new_df, how="left", on=group)
+
 
 
 def get_groupby_user_features(df):
@@ -69,10 +71,18 @@ def get_groupby_month_features(df):
 
 def get_groupby_dayofweek_features(df):
     """Get statistic features / dayofweek, answerCode"""
-    if "datofweek" not in df.columns:
+    if "dayofweek" not in df.columns:
         df = split_time(df)
     new_df = get_statistic_value(df, "dayofweek", "answerCode")
     return new_df
+
+
+def get_groupby_user_first3_features(df):
+    if "first3" not in df.columns:
+        df = split_assessmentItemID(df)
+    new_df = get_statistic_value(df, ["userID","first3"],"answerCode")
+    return new_df
+
 
 def split_time(df):
     """Split Timestamp into year, month, day, hour, minute and second"""
@@ -141,6 +151,7 @@ ADD_LIST = [
     get_groupby_item_features,
     get_groupby_tag_features,
     get_groupby_dayofweek_features,
+    get_groupby_user_first3_features,
     get_user_log,
     split_assessmentItemID,
     split_time,
