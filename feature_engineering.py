@@ -12,6 +12,12 @@
     get_seoson_concentration,
 """
 import pandas as pd
+from datetime import datetime
+
+def make_datetime(val):
+    a, b = val.split()
+    return datetime(*list(map(int, a.split('-'))), *list(map(int, b.split(':'))))
+
 
 def get_statistic_value(df, col, target):
     """Get target`s mean, count, var, sum, median groupby col"""
@@ -61,23 +67,27 @@ def get_groupby_month_features(df):
     new_df = get_statistic_value(df, "month","answerCode")
     return new_df
 
+def get_groupby_dayofweek_features(df):
+    """Get statistic features / dayofweek, answerCode"""
+    if "datofweek" not in df.columns:
+        df = split_time(df)
+    new_df = get_statistic_value(df, "dayofweek", "answerCode")
+    return new_df
 
 def split_time(df):
     """Split Timestamp into year, month, day, hour, minute and second"""
     new_data = df.copy()
-    new_data["temp1"] = new_data["Timestamp"].apply(lambda x: x.split()[0])
-    new_data["temp2"] = new_data["Timestamp"].apply(lambda x: x.split()[1])
+    if new_data["Timestamp"].dtype == "object":
+        new_data["Timestamp"] = df["Timestamp"].apply(make_datetime)
+    new_data["year"]=new_data["Timestamp"].dt.year
+    new_data["month"]=new_data["Timestamp"].dt.month
+    new_data["day"]=new_data["Timestamp"].dt.day
+    new_data["hour"]=new_data["Timestamp"].dt.hour
+    new_data["minute"]=new_data["Timestamp"].dt.minute
+    new_data["second"]=new_data["Timestamp"].dt.second
+    new_data["dayofweek"]=new_data["Timestamp"].dt.dayofweek
 
-    new_data["year"] = new_data["temp1"].apply(lambda x: x.split("-")[0])
-    new_data["month"] = new_data["temp1"].apply(lambda x: x.split("-")[1])
-    new_data["day"] = new_data["temp1"].apply(lambda x: x.split("-")[2])
-
-    new_data["hour"] = new_data["temp2"].apply(lambda x: x.split(":")[0])
-    new_data["minute"] = new_data["temp2"].apply(lambda x: x.split(":")[1])
-    new_data["second"] = new_data["temp2"].apply(lambda x: x.split(":")[2])
-
-    return new_data.drop(["temp1", "temp2"], axis=1)
-
+    return new_data
 
 def split_assessmentItemID(df):
     """Split assessmentItemID into size=3 tokens"""
@@ -115,7 +125,7 @@ def get_user_log(df):
     return df
 
 
-def get_seoson_concentration(df):
+def get_season_concentration(df):
     """
     Get features abount month
     monthAnswerRate : Monthly correct answer rate
@@ -130,11 +140,12 @@ ADD_LIST = [
     get_groupby_test_features,
     get_groupby_item_features,
     get_groupby_tag_features,
+    get_groupby_dayofweek_features,
     get_user_log,
     split_assessmentItemID,
     split_time,
     get_time_concentration,
-    get_seoson_concentration,
+    get_season_concentration,
 ]
 
 
