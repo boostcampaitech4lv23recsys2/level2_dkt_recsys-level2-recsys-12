@@ -1,20 +1,23 @@
-from collections import OrderedDict
 import copy
+import gc
 import math
 import os
 import warnings
+from collections import OrderedDict
 from datetime import datetime
-import gc
+
 warnings.filterwarnings(action="ignore")
 
+import numpy as np
 import torch
-import wandb
 from sklearn.model_selection import KFold
 
+import wandb
+
 from .criterion import get_criterion
-from .dataloader import get_loaders, get_loaders_kfold, data_augmentation
+from .dataloader import data_augmentation, get_loaders, get_loaders_kfold
 from .metric import get_metric
-from .model import LSTM, LSTMATTN, Bert, Saint, LastQuery
+from .model import LSTM, LSTMATTN, Bert, LastQuery, Saint
 from .optimizer import get_optimizer
 from .scheduler import get_scheduler
 
@@ -25,8 +28,10 @@ def run(args, train_data, valid_data, model, gradient=False):
     gc.collect()
     augmented_train_data = data_augmentation(train_data, args)
     if len(augmented_train_data) != len(train_data):
-        print(f"Data Augmentation applied. Train data {len(train_data)} -> {len(augmented_train_data)}\n")
-    
+        print(
+            f"Data Augmentation applied. Train data {len(train_data)} -> {len(augmented_train_data)}\n"
+        )
+
     train_data = augmented_train_data
     train_loader, valid_loader = get_loaders(args, train_data, valid_data)
 
@@ -97,8 +102,10 @@ def run_kfold(args, train_data, preprocess, model):
     gc.collect()
     augmented_train_data = data_augmentation(train_data, args)
     if len(augmented_train_data) != len(train_data):
-        print(f"Data Augmentation applied. Train data {len(train_data)} -> {len(augmented_train_data)}\n")
-        
+        print(
+            f"Data Augmentation applied. Train data {len(train_data)} -> {len(augmented_train_data)}\n"
+        )
+
     train_data = augmented_train_data
     kfold = KFold(n_splits=args.kfold, random_state=args.seed, shuffle=True)
 
@@ -216,8 +223,6 @@ def train(train_loader, model, optimizer, scheduler, args, gradient=False):
         preds = model(input)
         # targets = input[3]  # correct
         targets = input[0]  # correct is moved to index 0
-        # if args.model == "saint":
-        #     index = input[-1] # gather index
 
         loss = compute_loss(preds, targets)
         update_params(loss, model, optimizer, scheduler, args)
@@ -226,10 +231,6 @@ def train(train_loader, model, optimizer, scheduler, args, gradient=False):
             print(f"Training steps: {step} Loss: {str(loss.item())}")
 
         # predictions
-        # if args.model == "saint":
-        #     preds = preds.gather(1, index).view(-1)
-        #     targets = targets.gather(1, index).view(-1)
-        # else:
         preds = preds[:, -1]
         targets = targets[:, -1]
 
@@ -400,51 +401,6 @@ def process_batch(batch):
     return (correct, *features, mask, interaction)
 
 
-# 배치 전처리
-def process_batch_saint(batch, args):
-
-    test, question, tag, correct, mask = batch
-
-    # change to float
-    mask = mask.type(torch.FloatTensor)
-    correct = correct.type(torch.FloatTensor)
-
-    #  interaction을 임시적으로 correct를 한칸 우측으로 이동한 것으로 사용
-    #    saint의 경우 decoder에 들어가는 input이다
-    interaction = correct + 1 # 패딩을 위해 correct값에 1을 더해준다.
-    interaction = interaction.roll(shifts=1, dims=1)
-    interaction[:, 0] = 0 # set padding index to the first sequence
-    interaction = (interaction * mask).to(torch.int64)
-
-
-    #  test_id, question_id, tag
-    test = ((test + 1) * mask).to(torch.int64)
-    question = ((question + 1) * mask).to(torch.int64)
-    tag = ((tag + 1) * mask).to(torch.int64)
-
-    # gather index
-    # 마지막 sequence만 사용하기 위한 index
-    gather_index = torch.tensor(np.count_nonzero(mask, axis=1))
-    gather_index = gather_index.view(-1, 1) - 1
-
-
-    # device memory로 이동
-    test = test.to(args.device)
-    question = question.to(args.device)
-
-
-    tag = tag.to(args.device)
-    correct = correct.to(args.device)
-    mask = mask.to(args.device)
-
-    interaction = interaction.to(args.device)
-    gather_index = gather_index.to(args.device)
-
-    return (test, question,
-            tag, correct, mask,
-            interaction, gather_index)
-
-
 # loss계산하고 parameter update!
 def compute_loss(preds, targets):
     """
@@ -461,17 +417,12 @@ def compute_loss(preds, targets):
     return loss
 
 
-def update_params(loss, model, optimizer, scheduler, args, gradient=False):
+def update_params(loss, model, optimizer, scheduler, args):
     loss.backward()
-    
-    # save gradient distribution
-    if gradient:
-        args.n_iteration += 1
-        args.gradient[f'iteration_{args.n_iteration}'] = get_gradient(model)
-    # grad clip
+
     if args.clip_grad:
         torch.nn.utils.clip_grad_norm_(model.parameters(), args.clip_grad)
-    
+
     torch.nn.utils.clip_grad_norm_(model.parameters(), args.clip_grad)
     if args.scheduler == "linear_warmup":
         scheduler.step()

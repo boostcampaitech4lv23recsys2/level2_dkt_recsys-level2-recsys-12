@@ -3,8 +3,8 @@ import sys
 
 import numpy as np
 import torch
-import wandb
 
+import wandb
 from args import parse_args
 from src import trainer
 from src.dataloader import Preprocess
@@ -41,9 +41,9 @@ def main(args):
         if args.run_wandb:
             wandb.login()
             wandb.init(
-                project="DKT_MODEL", config=vars(args), entity="ai-tech-4-recsys-12"
+                project="LastQuery", config=vars(args), entity="ai-tech-4-recsys-12"
             )
-            wandb.run.name = f"{args.batch_size}_{args.lr}_{args.patience}"
+            wandb.run.name = f"{args.model}_{args.batch_size}_{args.lr}_{args.patience}"
             wandb.config = vars(args)
         train_data, valid_data = preprocess.split_data(train_data)
         trainer.run(args, train_data, valid_data, model)
