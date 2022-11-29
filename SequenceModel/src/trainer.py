@@ -1,31 +1,37 @@
 import copy
+import gc
 import math
 import os
 import warnings
+from collections import OrderedDict
 from datetime import datetime
-import gc
+
 warnings.filterwarnings(action="ignore")
 
+import numpy as np
 import torch
-import wandb
 from sklearn.model_selection import KFold
 
+import wandb
+
 from .criterion import get_criterion
-from .dataloader import get_loaders, get_loaders_kfold, data_augmentation
+from .dataloader import data_augmentation, get_loaders, get_loaders_kfold
 from .metric import get_metric
-from .model import LSTM, LSTMATTN, Bert
+from .model import LSTM, LSTMATTN, Bert, LastQuery, Saint
 from .optimizer import get_optimizer
 from .scheduler import get_scheduler
 
 
-def run(args, train_data, valid_data, model):
+def run(args, train_data, valid_data, model, gradient=False):
     # 캐시 메모리 비우기 및 가비지 컬렉터 가동!
     torch.cuda.empty_cache()
     gc.collect()
     augmented_train_data = data_augmentation(train_data, args)
     if len(augmented_train_data) != len(train_data):
-        print(f"Data Augmentation applied. Train data {len(train_data)} -> {len(augmented_train_data)}\n")
-    
+        print(
+            f"Data Augmentation applied. Train data {len(train_data)} -> {len(augmented_train_data)}\n"
+        )
+
     train_data = augmented_train_data
     train_loader, valid_loader = get_loaders(args, train_data, valid_data)
 
@@ -96,8 +102,10 @@ def run_kfold(args, train_data, preprocess, model):
     gc.collect()
     augmented_train_data = data_augmentation(train_data, args)
     if len(augmented_train_data) != len(train_data):
-        print(f"Data Augmentation applied. Train data {len(train_data)} -> {len(augmented_train_data)}\n")
-        
+        print(
+            f"Data Augmentation applied. Train data {len(train_data)} -> {len(augmented_train_data)}\n"
+        )
+
     train_data = augmented_train_data
     kfold = KFold(n_splits=args.kfold, random_state=args.seed, shuffle=True)
 
@@ -202,7 +210,7 @@ def run_kfold(args, train_data, preprocess, model):
             wandb.finish()
 
 
-def train(train_loader, model, optimizer, scheduler, args):
+def train(train_loader, model, optimizer, scheduler, args, gradient=False):
     model.train()
 
     total_preds = []
@@ -342,8 +350,26 @@ def get_model(args):
         model = LSTMATTN(args)
     if args.model == "bert":
         model = Bert(args)
+    if args.model == "saint":
+        model = Saint(args)
+    if args.model == "lastquery":
+        model = LastQuery(args)
 
     return model
+
+
+def get_gradient(model):
+    gradient = []
+
+    for name, param in model.named_parameters():
+        grad = param.grad
+        if grad != None:
+            gradient.append(grad.cpu().numpy().astype(np.float16))
+            # gradient.append(grad.clone().detach())
+        else:
+            gradient.append(None)
+
+    return gradient
 
 
 # 배치 전처리
@@ -393,6 +419,10 @@ def compute_loss(preds, targets):
 
 def update_params(loss, model, optimizer, scheduler, args):
     loss.backward()
+
+    if args.clip_grad:
+        torch.nn.utils.clip_grad_norm_(model.parameters(), args.clip_grad)
+
     torch.nn.utils.clip_grad_norm_(model.parameters(), args.clip_grad)
     if args.scheduler == "linear_warmup":
         scheduler.step()
