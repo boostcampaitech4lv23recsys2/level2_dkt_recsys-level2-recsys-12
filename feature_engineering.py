@@ -125,7 +125,7 @@ def get_user_log(df):
     return df
 
 
-def get_seoson_concentration(df):
+def get_season_concentration(df):
     """
     Get features abount month
     monthAnswerRate : Monthly correct answer rate
@@ -145,7 +145,7 @@ ADD_LIST = [
     split_assessmentItemID,
     split_time,
     get_time_concentration,
-    get_seoson_concentration,
+    get_season_concentration,
 ]
 
 
