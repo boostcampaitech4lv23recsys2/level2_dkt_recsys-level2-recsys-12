@@ -217,8 +217,8 @@ def train(train_loader, model, optimizer, scheduler, args):
         # input[3]: correct, input[-1]: interaction, input[-2]: mask
         input = list(map(lambda t: t.to(args.device), process_batch(batch)))
         preds = model(input)
-        targets = input[3]  # correct
-        # targets = input[0]  # correct is moved to index 0
+        # targets = input[3]  # correct
+        targets = input[0]  # correct is moved to index 0
 
         loss = compute_loss(preds, targets)
         update_params(loss, model, optimizer, scheduler, args)
@@ -254,8 +254,8 @@ def validate(valid_loader, model, args):
         input = list(map(lambda t: t.to(args.device), process_batch(batch)))
 
         preds = model(input)
-        targets = input[3]  # correct
-        # targets = input[0]  # correct is moved to index 0
+        # targets = input[3]  # correct
+        targets = input[0]  # correct is moved to index 0
 
         # predictions
         preds = preds[:, -1]
@@ -353,7 +353,8 @@ def get_model(args):
 def process_batch(batch):
     # batch[3]: correct, batch[-1]: mask
 
-    test, question, tag, correct, mask = batch
+    # test, question, tag, correct, mask = batch
+    correct, test, question, tag, mask = batch
     # correct, test, question, tag, mask = batch # batch = [correct, ...features..., mask]
 
     # change to float
@@ -375,7 +376,8 @@ def process_batch(batch):
     tag = ((tag + 1) * mask).int()
     # features = [((feat + 1) * mask).int() for feat in batch[1 : len(batch) - 1]]
 
-    return (test, question, tag, correct, mask, interaction)
+    # return (test, question, tag, correct, mask, interaction)
+    return (correct, test, question, tag, mask, interaction)
     # return (correct, *features, mask, interaction)
 
 

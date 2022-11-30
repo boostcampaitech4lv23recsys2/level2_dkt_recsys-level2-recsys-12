@@ -51,7 +51,8 @@ class LSTM(nn.Module):
     def forward(self, input):
         # input[3]: correct, input[-1]: interaction, input[-2]: mask
 
-        test, question, tag, _, mask, interaction = input
+        # test, question, tag, _, mask, interaction = input
+        _, test, question, tag, mask, interaction = input
         # _, test, question, tag, mask, interaction = input
 
         batch_size = interaction.size(0)
@@ -70,10 +71,10 @@ class LSTM(nn.Module):
 
         embed = torch.cat(
             [
-                embed_interaction,
                 embed_test,
                 embed_question,
                 embed_tag,
+                embed_interaction,
             ],
             2,
         )
@@ -142,7 +143,8 @@ class LSTMATTN(nn.Module):
     def forward(self, input):
         # input[3]: correct, input[-1]: interaction, input[-2]: mask
 
-        test, question, tag, _, mask, interaction = input
+        # test, question, tag, _, mask, interaction = input
+        _, test, question, tag, mask, interaction = input
         # _, test, question, tag, mask, interaction = input
 
         batch_size = interaction.size(0)
@@ -161,10 +163,10 @@ class LSTMATTN(nn.Module):
 
         embed = torch.cat(
             [
-                embed_interaction,
                 embed_test,
                 embed_question,
                 embed_tag,
+                embed_interaction,
             ],
             2,
         )
@@ -240,7 +242,8 @@ class Bert(nn.Module):
     def forward(self, input):
         # input[3]: correct, input[-1]: interaction, input[-2]: mask
 
-        test, question, tag, _, mask, interaction = input
+        # test, question, tag, _, mask, interaction = input
+        _, test, question, tag, mask, interaction = input
         # _, test, question, tag, mask, interaction = input
 
         batch_size = interaction.size(0)
@@ -259,10 +262,10 @@ class Bert(nn.Module):
 
         embed = torch.cat(
             [
-                embed_interaction,
                 embed_test,
                 embed_question,
                 embed_tag,
+                embed_interaction,
             ],
             2,
         )

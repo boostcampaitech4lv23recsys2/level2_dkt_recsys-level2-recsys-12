@@ -46,7 +46,7 @@ class Preprocess:
 
     # def __preprocessing(self, df, cate_cols, is_train=True):
     def __preprocessing(self, df, is_train=True):
-        cate_cols = ["assessmentItemID", "testId", "KnowledgeTag"]
+        cate_cols = ["testId", "assessmentItemID", "KnowledgeTag"]
 
         if not os.path.exists(self.args.asset_dir):
             os.makedirs(self.args.asset_dir)
@@ -105,7 +105,7 @@ class Preprocess:
         )
 
         df = df.sort_values(by=["userID", "Timestamp"], axis=0)  # 정렬을 위해 Timestamp가 필요
-        columns = ["userID", "assessmentItemID", "testId", "answerCode", "KnowledgeTag"]
+        columns = ["userID", "answerCode", "testId", "assessmentItemID", "KnowledgeTag"]
         # columns = ["answerCode"] + cate_cols
         group = (
             # df[["userID"] + columns]
@@ -113,10 +113,10 @@ class Preprocess:
             .groupby("userID")
             .apply(
                 lambda r: (
+                    r["answerCode"].values,
                     r["testId"].values,
                     r["assessmentItemID"].values,
                     r["KnowledgeTag"].values,
-                    r["answerCode"].values,
                 )
                 # lambda r: (tuple([r[col].values for col in columns]))
             )
@@ -137,15 +137,15 @@ class DKTDataset(torch.utils.data.Dataset):
         self.args = args
 
     def __getitem__(self, index):
-        row = self.data[index]  # row[3]: correct
+        row = self.data[index]  # row[0]: correct
 
         # 각 data의 sequence length
         seq_len = len(row[0])
 
-        test, question, tag, correct = row[0], row[1], row[2], row[3]
-        # correct, test, question, tag = row[0], row[1], row[2], row[3]
+        # test, question, tag, correct = row[0], row[1], row[2], row[3]
+        correct, test, question, tag = row[0], row[1], row[2], row[3]
 
-        cate_cols = [test, question, tag, correct]
+        cate_cols = [correct, test, question, tag]
         # cate_cols = [correct, test, question, tag]
 
         # cate_cols = list(row)
