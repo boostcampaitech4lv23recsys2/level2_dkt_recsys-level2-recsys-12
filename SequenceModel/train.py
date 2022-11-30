@@ -1,7 +1,6 @@
 import os
-import sys
 
-import numpy as np
+# import numpy as np
 import torch
 
 import wandb
@@ -10,8 +9,12 @@ from src import trainer
 from src.dataloader import Preprocess
 from src.utils import setSeeds
 
-sys.path.append("/opt/ml/input/code")
-import feature_engineering as fe
+# import sys
+
+
+
+# sys.path.append("/opt/ml/input/code")
+# import feature_engineering as fe
 
 
 def main(args):
@@ -25,13 +28,13 @@ def main(args):
     preprocess.load_train_data(args.file_name)
     train_data = preprocess.get_train_data()
 
-    # MAKE EMBEDDING LAYER INPUTS SIZE
-    # dataloader.py의 load_data_from_file 함수에서 처리되던
-    # embedding_layer의 input 크기 결정 작업을 여기서 처리하고 모델에 보내줍니다
-    args.embed_layer_input_size_list = [
-        len(np.load(os.path.join(args.asset_dir, f"{col}_classes.npy")))
-        for col in fe.SEQ_CATE_COLS
-    ]
+    # # MAKE EMBEDDING LAYER INPUTS SIZE
+    # # dataloader.py의 load_data_from_file 함수에서 처리되던
+    # # embedding_layer의 input 크기 결정 작업을 여기서 처리하고 모델에 보내줍니다
+    # args.embed_layer_input_size_list = [
+    #     len(np.load(os.path.join(args.asset_dir, f"{col}_classes.npy")))
+    #     for col in fe.SEQ_CATE_COLS
+    # ]
 
     # GET MODEL
     model = trainer.get_model(args).to(args.device)

@@ -217,8 +217,7 @@ def train(train_loader, model, optimizer, scheduler, args, gradient=False):
     total_targets = []
     losses = []
     for step, batch in enumerate(train_loader):
-        # input[0]: correct, input[-1]: interaction, input[-2]: mask
-        # input[1] ~ input[-3]: cate_cols
+        # input[3]: correct, input[-1]: interaction, input[-2]: mask
         input = list(map(lambda t: t.to(args.device), process_batch(batch)))
         preds = model(input)
         # targets = input[3]  # correct
@@ -254,8 +253,7 @@ def validate(valid_loader, model, args):
     total_preds = []
     total_targets = []
     for step, batch in enumerate(valid_loader):
-        # input[0]: correct, input[-1]: interaction, input[-2]: mask
-        # input[1] ~ input[-3]: cate_cols
+        # input[3]: correct, input[-1]: interaction, input[-2]: mask
         input = list(map(lambda t: t.to(args.device), process_batch(batch)))
 
         preds = model(input)
@@ -374,15 +372,17 @@ def get_gradient(model):
 
 # 배치 전처리
 def process_batch(batch):
-    # batch[0]: correct, batch[-1]: mask
-    # batch[1] ~ batch[-2]: cate_cols
+    # batch[3]: correct, batch[-1]: mask
 
     # test, question, tag, correct, mask = batch
+    correct, test, question, tag, mask = batch
     # correct, test, question, tag, mask = batch # batch = [correct, ...features..., mask]
 
     # change to float
-    mask = batch[-1].float()
-    correct = batch[0].float()
+    mask = mask.float()
+    correct = correct.float()
+    # mask = batch[-1].float()
+    # correct = batch[0].float()
 
     # interaction을 임시적으로 correct를 한칸 우측으로 이동한 것으로 사용
     interaction = correct + 1  # 패딩을 위해 correct값에 1을 더해준다.
@@ -392,13 +392,14 @@ def process_batch(batch):
     interaction = (interaction * interaction_mask).to(torch.int64)
 
     #  test_id, question_id, tag
-    # test = ((test + 1) * mask).int()
-    # question = ((question + 1) * mask).int()
-    # tag = ((tag + 1) * mask).int()
-    features = [((feat + 1) * mask).int() for feat in batch[1 : len(batch) - 1]]
+    test = ((test + 1) * mask).int()
+    question = ((question + 1) * mask).int()
+    tag = ((tag + 1) * mask).int()
+    # features = [((feat + 1) * mask).int() for feat in batch[1 : len(batch) - 1]]
 
     # return (test, question, tag, correct, mask, interaction)
-    return (correct, *features, mask, interaction)
+    return (correct, test, question, tag, mask, interaction)
+    # return (correct, *features, mask, interaction)
 
 
 # loss계산하고 parameter update!
