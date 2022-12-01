@@ -159,8 +159,8 @@ def get_elapsed_time(df):
     df["elapsedTime"] = df["elapsedTime"].dt.total_seconds()
     minus_idx = df["elapsedTime"] < 0
     df.loc[minus_idx, "elapsedTime"] = np.nan
-    out_of_75_idx = df["elapsedTime"] > 136
-    df.loc[out_of_75_idx, "elapsedTime"] = np.nan
+    out_of_time_idx = df["elapsedTime"] > 300
+    df.loc[out_of_time_idx, "elapsedTime"] = np.nan
     nan_idx = df["elapsedTime"].isnull()
     df.loc[nan_idx, "elapsedTime"] = df["elapsedTime"].mean()
     return df
