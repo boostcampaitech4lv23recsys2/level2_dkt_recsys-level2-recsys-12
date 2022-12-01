@@ -62,10 +62,17 @@ def parse_args():
 
     ### 옵션 ###
     parser.add_argument("--kfold", default=0, type=int, help="apply k-fold if not 0")
-    parser.add_argument("--run_wandb", default=False, type=bool, help="option for running wandb")
+    parser.add_argument(
+        "--run_wandb", default=False, type=bool, help="option for running wandb"
+    )
 
     ### 중요 ###
-    parser.add_argument("--model", default="lstm", type=str, help="model type")
+    parser.add_argument(
+        "--model",
+        default="lstm",
+        type=str,
+        help="model type(lstm, lstmattn, bert, saint, lastquery",
+    )
     parser.add_argument("--optimizer", default="adam", type=str, help="optimizer type")
     parser.add_argument(
         "--scheduler", default="plateau", type=str, help="scheduler type"
@@ -73,13 +80,23 @@ def parse_args():
 
     ### Data Augmentation ###
     parser.add_argument(
-        "--window", default=False, type=bool, help="Data Augmentation window / True or False"
+        "--window",
+        default=False,
+        type=bool,
+        help="Data Augmentation window / True or False",
     )
     parser.add_argument(
-        "--shuffle", default=False, type=bool, help="Data Augmentation shuffle / True or False"
+        "--shuffle",
+        default=False,
+        type=bool,
+        help="Data Augmentation shuffle / True or False",
     )
-    parser.add_argument("--stride", default=20, type=int, help="Data Augmentation stride") # default = max_seq_len
-    parser.add_argument("--shuffle_n", default=2, type=int, help="Data Augmentation shuffle")
+    parser.add_argument(
+        "--stride", default=20, type=int, help="Data Augmentation stride"
+    )  # default = max_seq_len
+    parser.add_argument(
+        "--shuffle_n", default=2, type=int, help="Data Augmentation shuffle"
+    )
     args = parser.parse_args()
 
     return args

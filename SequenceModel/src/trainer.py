@@ -1,31 +1,37 @@
 import copy
+import gc
 import math
 import os
 import warnings
+from collections import OrderedDict
 from datetime import datetime
-import gc
+
 warnings.filterwarnings(action="ignore")
 
+import numpy as np
 import torch
-import wandb
 from sklearn.model_selection import KFold
 
+import wandb
+
 from .criterion import get_criterion
-from .dataloader import get_loaders, get_loaders_kfold, data_augmentation
+from .dataloader import data_augmentation, get_loaders, get_loaders_kfold
 from .metric import get_metric
-from .model import LSTM, LSTMATTN, Bert
+from .model import LSTM, LSTMATTN, Bert, LastQuery, Saint
 from .optimizer import get_optimizer
 from .scheduler import get_scheduler
 
 
-def run(args, train_data, valid_data, model):
+def run(args, train_data, valid_data, model, gradient=False):
     # 캐시 메모리 비우기 및 가비지 컬렉터 가동!
     torch.cuda.empty_cache()
     gc.collect()
     augmented_train_data = data_augmentation(train_data, args)
     if len(augmented_train_data) != len(train_data):
-        print(f"Data Augmentation applied. Train data {len(train_data)} -> {len(augmented_train_data)}\n")
-    
+        print(
+            f"Data Augmentation applied. Train data {len(train_data)} -> {len(augmented_train_data)}\n"
+        )
+
     train_data = augmented_train_data
     train_loader, valid_loader = get_loaders(args, train_data, valid_data)
 
@@ -96,8 +102,10 @@ def run_kfold(args, train_data, preprocess, model):
     gc.collect()
     augmented_train_data = data_augmentation(train_data, args)
     if len(augmented_train_data) != len(train_data):
-        print(f"Data Augmentation applied. Train data {len(train_data)} -> {len(augmented_train_data)}\n")
-        
+        print(
+            f"Data Augmentation applied. Train data {len(train_data)} -> {len(augmented_train_data)}\n"
+        )
+
     train_data = augmented_train_data
     kfold = KFold(n_splits=args.kfold, random_state=args.seed, shuffle=True)
 
@@ -202,15 +210,14 @@ def run_kfold(args, train_data, preprocess, model):
             wandb.finish()
 
 
-def train(train_loader, model, optimizer, scheduler, args):
+def train(train_loader, model, optimizer, scheduler, args, gradient=False):
     model.train()
 
     total_preds = []
     total_targets = []
     losses = []
     for step, batch in enumerate(train_loader):
-        # input[0]: correct, input[-1]: interaction, input[-2]: mask
-        # input[1] ~ input[-3]: cate_cols
+        # input[3]: correct, input[-1]: interaction, input[-2]: mask
         input = list(map(lambda t: t.to(args.device), process_batch(batch)))
         preds = model(input)
         # targets = input[3]  # correct
@@ -246,8 +253,7 @@ def validate(valid_loader, model, args):
     total_preds = []
     total_targets = []
     for step, batch in enumerate(valid_loader):
-        # input[0]: correct, input[-1]: interaction, input[-2]: mask
-        # input[1] ~ input[-3]: cate_cols
+        # input[3]: correct, input[-1]: interaction, input[-2]: mask
         input = list(map(lambda t: t.to(args.device), process_batch(batch)))
 
         preds = model(input)
@@ -342,21 +348,41 @@ def get_model(args):
         model = LSTMATTN(args)
     if args.model == "bert":
         model = Bert(args)
+    if args.model == "saint":
+        model = Saint(args)
+    if args.model == "lastquery":
+        model = LastQuery(args)
 
     return model
 
 
+def get_gradient(model):
+    gradient = []
+
+    for name, param in model.named_parameters():
+        grad = param.grad
+        if grad != None:
+            gradient.append(grad.cpu().numpy().astype(np.float16))
+            # gradient.append(grad.clone().detach())
+        else:
+            gradient.append(None)
+
+    return gradient
+
+
 # 배치 전처리
 def process_batch(batch):
-    # batch[0]: correct, batch[-1]: mask
-    # batch[1] ~ batch[-2]: cate_cols
+    # batch[3]: correct, batch[-1]: mask
 
     # test, question, tag, correct, mask = batch
+    correct, test, question, tag, mask = batch
     # correct, test, question, tag, mask = batch # batch = [correct, ...features..., mask]
 
     # change to float
-    mask = batch[-1].float()
-    correct = batch[0].float()
+    mask = mask.float()
+    correct = correct.float()
+    # mask = batch[-1].float()
+    # correct = batch[0].float()
 
     # interaction을 임시적으로 correct를 한칸 우측으로 이동한 것으로 사용
     interaction = correct + 1  # 패딩을 위해 correct값에 1을 더해준다.
@@ -366,13 +392,14 @@ def process_batch(batch):
     interaction = (interaction * interaction_mask).to(torch.int64)
 
     #  test_id, question_id, tag
-    # test = ((test + 1) * mask).int()
-    # question = ((question + 1) * mask).int()
-    # tag = ((tag + 1) * mask).int()
-    features = [((feat + 1) * mask).int() for feat in batch[1 : len(batch) - 1]]
+    test = ((test + 1) * mask).int()
+    question = ((question + 1) * mask).int()
+    tag = ((tag + 1) * mask).int()
+    # features = [((feat + 1) * mask).int() for feat in batch[1 : len(batch) - 1]]
 
     # return (test, question, tag, correct, mask, interaction)
-    return (correct, *features, mask, interaction)
+    return (correct, test, question, tag, mask, interaction)
+    # return (correct, *features, mask, interaction)
 
 
 # loss계산하고 parameter update!
@@ -393,6 +420,10 @@ def compute_loss(preds, targets):
 
 def update_params(loss, model, optimizer, scheduler, args):
     loss.backward()
+
+    if args.clip_grad:
+        torch.nn.utils.clip_grad_norm_(model.parameters(), args.clip_grad)
+
     torch.nn.utils.clip_grad_norm_(model.parameters(), args.clip_grad)
     if args.scheduler == "linear_warmup":
         scheduler.step()
