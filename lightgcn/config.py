@@ -40,7 +40,6 @@ class CFG:
     learning_rate = 0.001
     weight_basepath = "./weight"
     patience = 20
-
     # wandb_kwargs = dict(
     #     project="DKT_LGCN",
     #     entity="ai-tech-4-recsys-12",

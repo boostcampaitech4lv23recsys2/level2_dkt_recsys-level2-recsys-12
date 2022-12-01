@@ -4,17 +4,16 @@ get_entire_data
 get_features
 split_train_valid_test_categorical
 """
+import pandas as pd
+import numpy as np
 import sys
 sys.path.append("/opt/ml/input/code")
 
-import feature_engineering as fe
+from feature_engineering import cluster_two_features, feature_engineering
 
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, KBinsDiscretizer, LabelEncoder
 from sklearn.decomposition import PCA
-
-import pandas as pd
-import numpy as np
-
+from tqdm import tqdm
 
 
 def load_data(path="/opt/ml/input/data", IS_CUSTOM=False):
@@ -35,7 +34,7 @@ def get_entire_data(data1, data2):
 
 def get_features(data):
     """data : feature_engineering을 진행 할 데이터셋을 넣어주세요."""
-    return fe.feature_engineering(data)
+    return feature_engineering(data)
 
 
 def split_train_valid_test_categorical(df, valid_len=3):
@@ -175,7 +174,21 @@ def ctb_preprocessing(data):
         data[col] = data[col].fillna(-1).astype(str)
     return data
 
-def ctb_data_loader(IS_CUSTOM=False,USE_VALID=True, DROPS=[]):
+
+def get_low_importance_pca(df, cols, n_components):
+    df[cols] = df[cols].fillna(df[cols].mean())
+    print("Scaling init...")
+    scaler = StandardScaler()
+    df_scaled = scaler.fit_transform(df[cols])
+    print("PCA init...")
+    pca = PCA(n_components=n_components)
+    df_pca = pd.DataFrame(pca.fit_transform(df_scaled))
+    df_pca.columns = ["pca_"+str(1+i) for i in range(n_components)]
+    print("done!")
+    return df_pca
+
+
+def ctb_data_loader(IS_CUSTOM=False,USE_VALID=True, DROPS=[], low_importance=[], n_components=10, valid_len=3):
     """
     Load and preprocess data to use xgboost
 
@@ -186,8 +199,13 @@ def ctb_data_loader(IS_CUSTOM=False,USE_VALID=True, DROPS=[]):
     """
     _train, _test = load_data(IS_CUSTOM=IS_CUSTOM)
     entire_data = get_entire_data(_train, _test)
-    df = get_features(entire_data).drop(DROPS, axis=1)
-    train, valid, test = split_train_valid_test_categorical(df)
+    df = get_features(entire_data) #.drop(DROPS, axis=1)
+    df["KnowledgeTag_first3_clust"] = cluster_two_features(df, "KnowledgeTag", "first3")
+    pca_df = get_low_importance_pca(df,low_importance, n_components)
+    for i in range(n_components):
+        df["pca_"+str(i+1)] = pca_df["pca_"+str(i+1)]
+    df = df.drop(DROPS, axis=1)
+    train, valid, test = split_train_valid_test_categorical(df, valid_len=valid_len)
     if not USE_VALID:
         train = pd.concat([train,valid])
         valid = valid.drop([val for val in valid.index], axis=0)
@@ -199,7 +217,9 @@ def ctb_data_loader(IS_CUSTOM=False,USE_VALID=True, DROPS=[]):
     x_valid = ctb_preprocessing(x_valid)
     test = ctb_preprocessing(test)
     return x_train, x_valid, y_train, y_valid, test
+"""
 
+"""
 
 ################################# LGBM #################################
 def lgbm_data_loader(IS_CUSTOM=False,USE_VALID=True, DROPS=[], valid_len=3):
@@ -219,3 +239,127 @@ def lgbm_data_loader(IS_CUSTOM=False,USE_VALID=True, DROPS=[], valid_len=3):
     valid = valid.drop(["answerCode"], axis=1)
     return train, valid, y_train, y_valid, test
 
+
+
+################################# category #################################
+def get_binning_data(df, col, n_bins=10, encode='ordinal', strategy='quantile'):
+    """
+    #1. strategy = 'uniform'
+    #2. strategy = 'quantile'
+    #3. strategy = 'kmeans'
+    """
+    train_pt = pd.DataFrame(df[col])
+    est_uni = KBinsDiscretizer(n_bins=10, encode='ordinal', strategy=strategy)
+    est_uni.fit(train_pt)
+    Xt_uni=est_uni.transform(train_pt)
+    unique, counts = np.unique(Xt_uni, return_counts=True)
+    return Xt_uni.squeeze(1)
+    
+def category_data_loader(IS_CUSTOM=False, USE_VALID=True, encode='ordinal', strategy='kmeans', DROPS=[], valid_len=3, PCA=[], n_components=3, USE_PCA = False):
+    """
+    #1. strategy = 'uniform'
+    #2. strategy = 'quantile'
+    #3. strategy = 'kmeans'
+    """
+    _train, _test = load_data(IS_CUSTOM=IS_CUSTOM)
+    entire_data = get_entire_data(_train, _test)
+    df = get_features(entire_data) #.drop(DROPS, axis=1)
+    df["KnowledgeTag_first3_clust"] = cluster_two_features(df, "KnowledgeTag", "first3")
+    if USE_PCA:
+        pca_df = get_low_importance_pca(df,PCA, n_components)
+        for i in range(n_components):
+            df["pca_"+str(i+1)] = pca_df["pca_"+str(i+1)]
+        
+    cat_features = []
+    bin_list = []
+    new_df = df.copy()
+
+    for col in tqdm(df.columns,"Label Encoding..."):
+        if (col in DROPS + ["answerCode"] + PCA) or ("pca" in col):
+            continue
+        if (df[col].dtype == int) or (df[col].dtype == float and df[col].nunique() < 100):
+            new_df[col] = new_df[col].fillna(new_df[col].mean())
+            le = LabelEncoder()
+            new_df[col] = le.fit_transform(new_df[col])
+            cat_features.append(col)
+        elif df[col].dtype==float:
+            bin_list.append(col)
+            new_df[col] = new_df[col].fillna(new_df[col].mean())
+            cat_features.append(col)
+            continue
+        else:
+            le = LabelEncoder()
+            new_df[col] = le.fit_transform(new_df[col])
+            cat_features.append(col)
+    
+    print("Start binning")
+    for col in tqdm(bin_list,"Binning..."):
+        new_df[col] = get_binning_data(new_df, col, n_bins=int(df[col].nunique()**0.5), strategy="kmeans")
+    new_df = new_df.drop(DROPS+PCA, axis=1)
+
+    for col in new_df.columns:
+        if "pca" in col:
+            continue
+        new_df[col] = new_df[col].astype(int)
+    train, valid, test = split_train_valid_test_categorical(new_df, valid_len=valid_len)
+    if not USE_VALID:
+        train = pd.concat([train,valid])
+        valid = valid.drop([val for val in valid.index], axis=0)
+    y_train = train["answerCode"]
+    train = train.drop(["answerCode"], axis=1)
+    y_valid = valid["answerCode"]
+    valid = valid.drop(["answerCode"], axis=1)
+    return train, valid, y_train, y_valid, test, cat_features
+
+
+
+
+
+
+
+
+
+if __name__ == "__main__":
+    IS_CUSTOM = True
+    USE_VALID = True
+    valid_len = 5
+    n_components = 5
+
+    DROPS = [
+        'Timestamp','year','day','minute','second','KnowledgeTag',
+    ]
+    PCA = [
+        'hour_answerCode_sum',
+        'userID_dayofweek_answerCode_count',
+        'user_correct_answer',
+        'user_total_answer',
+        'hour_answerCode_var',
+        'hour_answerCode_mean',
+        'userID_first3_answerCode_count',
+        'userID_month_answerCode_count',
+        'KnowledgeTag_first3_answerCode_sum',
+        'KnowledgeTag',
+        'userID_answerCode_count',
+        'userID_answerCode_sum',
+        'testId_answerCode_sum',
+        'KnowledgeTag_answerCode_count',
+        'KnowledgeTag_answerCode_sum',
+        'month',
+        'hour',
+        'dayofweek',
+        'dayofweek_answerCode_mean',
+        'dayofweek_answerCode_count',
+        'dayofweek_answerCode_sum',
+        'dayofweek_answerCode_var',
+        'mid3',
+        'KnowledgeTag_first3_answerCode_mean',
+        'KnowledgeTag_first3_answerCode_count',
+        'month_answerCode_var',
+        'month_answerCode_count',
+    ]
+    train, valid, y_train, y_valid, test, cat_features = category_data_loader(IS_CUSTOM=IS_CUSTOM, USE_VALID=USE_VALID, encode='ordinal', strategy='quantile', DROPS=DROPS, valid_len=valid_len, PCA=PCA, n_components=n_components)
+    
+    print(f"train : {train.shape}")
+    print(f"valid : {valid.shape}")
+    print(f"test : {test.shape}")
+    print(f"cat_features : {cat_features}")

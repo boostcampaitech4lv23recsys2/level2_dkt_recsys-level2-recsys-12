@@ -3,7 +3,6 @@ from sklearn.metrics import accuracy_score, roc_auc_score
 
 def check_accuracy(PRED_PATH = "Boosting/output/lgbm_submission.csv"):
     threshold = 0.5
-
     ANSWER_PATH = "../data/custom_answer.csv"
 
     submission_result = pd.read_csv(PRED_PATH)

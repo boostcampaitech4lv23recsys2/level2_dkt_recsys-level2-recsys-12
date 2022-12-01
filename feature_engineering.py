@@ -14,6 +14,10 @@
 import pandas as pd
 from datetime import datetime
 
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans
+############################################# Tools #############################################
+
 def make_datetime(val):
     a, b = val.split()
     return datetime(*list(map(int, a.split('-'))), *list(map(int, b.split(':'))))
@@ -23,11 +27,30 @@ def get_statistic_value(df:pd.DataFrame, group:list, target:str="answerCode")->p
     """Get target`s mean, count, var, sum, median groupby group"""
     if type(group) == str:
         group = [group]
-    statistics = ["mean", "count", "sum", "var", "median"]
+    # statistics = ["mean", "count", "sum", "var", "median"]
+    statistics = ["mean", "count", "sum", "var"]
     new_df = df.groupby(group)[target].agg(statistics)
     new_df.columns = ["_".join(group+[target,i]) for i in statistics]
     return pd.merge(left=df, right=new_df, how="left", on=group)
 
+
+def cluster_two_features(df, feat_a, feat_b, n_cluster=44):
+    """ clustering feat_a, feat_b into n_cluster categories.
+    output : pd.DataFrame["predict"]
+    """
+    scaler = StandardScaler()
+    model = KMeans(n_clusters=n_cluster,algorithm='lloyd')
+    new_df = df[[feat_a,feat_b]]
+    id_code = pd.DataFrame(scaler.fit_transform(new_df))
+    id_code.columns = [feat_a, feat_b]
+    model.fit(id_code)
+    predict = pd.DataFrame(model.predict(id_code))
+    predict.columns=['predict']
+    return predict
+
+
+
+########################################### Features ###########################################
 
 
 def get_groupby_user_features(df):
@@ -69,6 +92,7 @@ def get_groupby_month_features(df):
     new_df = get_statistic_value(df, "month","answerCode")
     return new_df
 
+
 def get_groupby_dayofweek_features(df):
     """Get statistic features / dayofweek, answerCode"""
     if "dayofweek" not in df.columns:
@@ -81,6 +105,34 @@ def get_groupby_user_first3_features(df):
     if "first3" not in df.columns:
         df = split_assessmentItemID(df)
     new_df = get_statistic_value(df, ["userID","first3"],"answerCode")
+    return new_df
+
+
+def get_groupby_tag_first3_features(df):
+    if "first3" not in df.columns:
+        df = split_assessmentItemID(df)
+    new_df = get_statistic_value(df, ["KnowledgeTag","first3"],"answerCode")
+    return new_df
+
+
+def get_groupby_user_month_features(df):
+    if "month" not in df.columns:
+        df = split_time(df)
+    new_df = get_statistic_value(df, ["userID","month"],"answerCode")
+    return new_df
+
+
+def get_groupby_user_hour_features(df):
+    if "hour" not in df.columns:
+        df = split_time(df)
+    new_df = get_statistic_value(df, ["userID","hour"],"answerCode")
+    return new_df
+
+
+def get_groupby_user_dayofweek_features(df):
+    if "dayofweek" not in df.columns:
+        df = split_time(df)
+    new_df = get_statistic_value(df, ["userID","dayofweek"],"answerCode")
     return new_df
 
 
@@ -152,6 +204,10 @@ ADD_LIST = [
     get_groupby_tag_features,
     get_groupby_dayofweek_features,
     get_groupby_user_first3_features,
+    get_groupby_tag_first3_features,
+    get_groupby_user_month_features,
+    get_groupby_user_hour_features,
+    get_groupby_user_dayofweek_features,
     get_user_log,
     split_assessmentItemID,
     split_time,
