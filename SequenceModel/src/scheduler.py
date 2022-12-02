@@ -1,5 +1,6 @@
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from transformers import get_linear_schedule_with_warmup
+from custom_scheduler import CosineAnnealingWarmUpRestarts
 
 
 def get_scheduler(optimizer, args):
@@ -12,5 +13,10 @@ def get_scheduler(optimizer, args):
             optimizer,
             num_warmup_steps=args.warmup_steps,
             num_training_steps=args.total_steps,
+        )
+    elif args.scheduler == "cosine_annealing_warmup":
+        scheduler = CosineAnnealingWarmUpRestarts(
+            optimizer,
+            T_0=150, T_mult=1, eta_max=0.1, T_up=10, gamma=0.5
         )
     return scheduler
