@@ -1,51 +1,41 @@
+import argparse
 import time
+from typing import Optional, Union
+from torch import Tensor
 
-# ====================================================
-# CFG
-# learning_rate=0.005,
-# eval_epoch=1,
-# top_k=10,
-# save_model=False,
-# epochs=30,
-# save_epoch=1
+from args import parse_args
 
-# ====================================================
 class CFG:
+    args, wandb_kwargs = parse_args()
+    
     use_cuda_if_available = True
     user_wandb = False
-    # wandb_kwargs = dict(project="dkt-gcn")
-    wandb_kwargs = dict(project="DKT_LGCN", entity="ai-tech-4-recsys-12")
+    wandb_kwargs = wandb_kwargs
 
     # data
-    basepath = "/opt/ml/input/data/"
-    loader_verbose = True
+    basepath = args.basepath
+    loader_verbose = args.loader_verbose
 
     # dump
-    timestr = time.strftime("%m.%d-%H:%M:%S")  # 날짜
+    timestr = args.timestr  # 날짜
 
-    output_dir = "./output/"
-    pred_file = "submission_{}.csv".format(timestr)
+    output_dir = args.output_dir
+    pred_file = args.pred_file
 
     # build
-    embedding_dim = 64  # int
-    num_layers = 3  # int
-    alpha = None  # Optional[Union[float, Tensor]]
-    build_kwargs = {
-        # "top_k": 10,
-    }  # other arguments
-    weight = "./weight/best_model.pt"
+    embedding_dim = args.embedding_dim  # int
+    num_layers = args.num_layers # int
+    alpha = args.alpha  # Optional[Union[float, Tensor]]
+    build_kwargs = args.build_kwargs
+    weight = args.weight
 
     # train
-    n_epoch = 653
-    learning_rate = 0.001
-    weight_basepath = "./weight"
-    patience = 20
-
-    # wandb_kwargs = dict(
-    #     project="DKT_LGCN",
-    #     entity="ai-tech-4-recsys-12",
-    #     name=f"TH_EMB_DIM{embedding_dim},LAYER{num_layers},LR{learning_rate}"
-    #     )
+    n_epoch = args.n_epoch
+    learning_rate = args.learning_rate
+    weight_basepath = args.weight_basepath
+    patience = args.patience
+    edge_dropout = args.edge_dropout
+    edge_dropout_rate = args.edge_dropout_rate
 
 
 logging_conf = {  # only used when 'user_wandb==False'
