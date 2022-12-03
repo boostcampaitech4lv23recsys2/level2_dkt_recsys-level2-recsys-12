@@ -8,7 +8,7 @@
     split_time,
     split_assessmentItemID,
     get_time_concentration,
-    get_user_log,
+    # get_user_log,             # 현재 일시 비활성화 상태입니다
     get_seoson_concentration,
 """
 from datetime import datetime
@@ -220,7 +220,7 @@ ADD_LIST = [
     get_groupby_tag_features,
     get_groupby_dayofweek_features,
     get_groupby_user_first3_features,
-    get_user_log,
+    # get_user_log,
     split_assessmentItemID,
     split_time,
     get_time_concentration,
