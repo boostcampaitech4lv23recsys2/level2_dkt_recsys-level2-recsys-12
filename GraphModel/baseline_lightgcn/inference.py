@@ -8,6 +8,8 @@ from lightgcn.datasets import prepare_dataset
 from lightgcn.models import build, inference
 from lightgcn.utils import get_logger
 
+from check_accuracy import check_accuracy
+
 logger = get_logger(logging_conf)
 use_cuda = torch.cuda.is_available() and CFG.use_cuda_if_available
 device = torch.device("cuda" if use_cuda else "cpu")
@@ -50,6 +52,14 @@ def main():
     logger.info("[4/4] Result Dump - Done")
 
     logger.info("Task Complete")
+    logger.info("Test 성능 측정")
+    auc, acc = check_accuracy(PRED_PATH = os.path.join(CFG.output_dir, CFG.pred_file))
+    logger.info(f"Test performance: auc : {auc} \t\t acc : {acc}")
+    logger.info(f"n_epoch: {CFG.n_epoch}, \t feature_weight: [ ], \t learning_rate: {CFG.learning_rate}, \t using_features: [ ]")
+    if CFG.edge_dropout:
+        logger.info(f"edge_dropout_rate: {CFG.edge_dropout_rate}")
+    else:
+        logger.info(f"no edge_dropout")
 
 
 if __name__ == "__main__":
