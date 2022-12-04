@@ -3,25 +3,24 @@
 
 # ## Settings
 
-# In[34]:
+# In[20]:
 
 
 # import libraries
 from sklearn.feature_selection import VarianceThreshold, SelectKBest, chi2
-from statsmodels.stats.outliers_influence import variance_inflation_factor
 import feature_engineering as fe
 import pandas as pd
 import numpy as np
 
 
-# In[35]:
+# In[21]:
 
 
 # load data
 train_data = pd.read_csv("../data/train_data.csv")
 
 
-# In[36]:
+# In[22]:
 
 
 # preprocess data
@@ -30,7 +29,7 @@ original_data = fe.feature_engineering(train_data)
 original_data
 
 
-# In[37]:
+# In[23]:
 
 
 # get continuous data
@@ -46,7 +45,7 @@ continuous_data = original_data.drop(['userID', 'assessmentItemID', 'testId', 'a
 # ## 1. 분산 임계 (Variance Threshold)
 # * 분산값이 작은(변별력이 낮은) 변수를 제외하는 작업
 
-# In[38]:
+# In[24]:
 
 
 # set features: input 52 continuous features
@@ -59,14 +58,14 @@ selector.fit_transform(X).shape
 # * 분산 2 기준,
 # * 52개의 연속형 변수 중, 28개의 feature가 선택되었고, 24개의 feature가 제외되었다
 
-# In[39]:
+# In[25]:
 
 
 # 선택된 feature의 정보
 X.columns[selector.get_support()]
 
 
-# In[40]:
+# In[26]:
 
 
 selector.variances_[selector.get_support()]
@@ -75,7 +74,7 @@ selector.variances_[selector.get_support()]
 # ## 2. 카이제곱 독립검정 (Chi-squared Test)
 # * output(answerCode)과의 상관관계가 높은 input feature들을 찾는 작업
 
-# In[41]:
+# In[27]:
 
 
 # set features: input 28 features
@@ -98,36 +97,35 @@ X = X[['userID_answerCode_count', 'userID_answerCode_sum',
 X
 
 
-# In[42]:
+# In[28]:
 
 
-# scaling data in 0 to 1
+# Min max scaling
 for col in X.columns:
-    X[col] = X[col] / X[col].max()
-X
+    X[col] = (X[col] - X[col].min()) / (X[col].max() - X[col].min())
 
 
-# In[43]:
+# In[29]:
 
 
 y = original_data.copy()['answerCode']
 y
 
 
-# In[44]:
+# In[30]:
 
 
-selector = SelectKBest(chi2, k=19) # 선택하고자 하는 변수의 개수를 k 값으로 지정해줄 수 있음
+selector = SelectKBest(chi2, k=14) # 선택하고자 하는 변수의 개수를 k 값으로 지정해줄 수 있음
 selector.fit_transform(X, y).shape
 
 
-# In[45]:
+# In[31]:
 
 
 selector.scores_
 
 
-# In[46]:
+# In[32]:
 
 
 # 선택된 feature의 정보
@@ -140,12 +138,10 @@ X.columns[selector.get_support()]
 
 # * 선택된 변수
 # * 범주형: 'userID', 'assessmentID', 'testId', 'KnowledgeTag', 'first3', 'hour_answerCode_Level' / 'answerCode' (target)
-# * 연속형: 'userID_answerCode_count', 'userID_answerCode_sum',
-#        'testId_answerCode_count', 'testId_answerCode_sum',
+# * 연속형: 'userID_answerCode_sum', 'testId_answerCode_count',
 #        'assessmentItemID_answerCode_sum', 'KnowledgeTag_answerCode_count',
-#        'KnowledgeTag_answerCode_sum', 'userID_first3_answerCode_count',
-#        'userID_first3_answerCode_sum', 'month_answerCode_count',
-#        'month_answerCode_sum', 'elapsedTime', 'userID_elapsedTime_median',
+#        'KnowledgeTag_answerCode_sum', 'userID_first3_answerCode_sum',
+#        'elapsedTime', 'userID_elapsedTime_median',
 #        'KnowledgeTag_elapsedTime_median', 'testId_elapsedTime_median',
 #        'userID_answerCode_elapsedTime_median',
 #        'KnowledgeTag_answerCode_elapsedTime_median',
