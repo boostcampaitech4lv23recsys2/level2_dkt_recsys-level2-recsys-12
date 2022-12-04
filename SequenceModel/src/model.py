@@ -104,6 +104,7 @@ class LSTMATTN(nn.Module):
         self.n_layers = self.args.n_layers
         self.n_heads = self.args.n_heads
         self.drop_out = self.args.drop_out
+        self.lstmattn_bert_n_hidden_layer = self.args.lstmattn_bert_n_hidden_layer
 
         # Embedding
         # interaction은 현재 correct로 구성되어있다. correct(1, 2) + padding(0)
@@ -131,7 +132,7 @@ class LSTMATTN(nn.Module):
         self.config = BertConfig(
             3,  # not used
             hidden_size=self.hidden_dim,
-            num_hidden_layers=1,
+            num_hidden_layers=self.lstmattn_bert_n_hidden_layer,  # baseline default value: 1
             num_attention_heads=self.n_heads,
             intermediate_size=self.hidden_dim,
             hidden_dropout_prob=self.drop_out,

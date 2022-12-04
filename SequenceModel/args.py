@@ -48,6 +48,12 @@ def parse_args():
     parser.add_argument("--n_layers", default=2, type=int, help="number of layers")
     parser.add_argument("--n_heads", default=2, type=int, help="number of heads")
     parser.add_argument("--drop_out", default=0.2, type=float, help="drop out rate")
+    parser.add_argument(
+        "--lstmattn_bert_n_hidden_layer",
+        default=2,
+        type=int,
+        help="number of hidden layers at bert config of lstmattn",
+    )  # baseline의 기본값은 1. 멘토님의 조언에 따라 값을 늘려봄
 
     # 훈련
     parser.add_argument("--n_epochs", default=20, type=int, help="number of epochs")
