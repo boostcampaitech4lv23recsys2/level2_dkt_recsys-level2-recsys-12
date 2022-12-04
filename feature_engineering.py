@@ -8,7 +8,7 @@
     split_time,
     split_assessmentItemID,
     get_time_concentration,
-    get_user_log,
+    # get_user_log,             # 현재 일시 비활성화 상태입니다
     get_seoson_concentration,
 """
 from datetime import datetime
@@ -159,8 +159,8 @@ def get_elapsed_time(df):
     df["elapsedTime"] = df["elapsedTime"].dt.total_seconds()
     minus_idx = df["elapsedTime"] < 0
     df.loc[minus_idx, "elapsedTime"] = np.nan
-    out_of_75_idx = df["elapsedTime"] > 136
-    df.loc[out_of_75_idx, "elapsedTime"] = np.nan
+    out_of_time_idx = df["elapsedTime"] > 300
+    df.loc[out_of_time_idx, "elapsedTime"] = np.nan
     nan_idx = df["elapsedTime"].isnull()
     df.loc[nan_idx, "elapsedTime"] = df["elapsedTime"].mean()
     return df
@@ -220,7 +220,7 @@ ADD_LIST = [
     get_groupby_tag_features,
     get_groupby_dayofweek_features,
     get_groupby_user_first3_features,
-    get_user_log,
+    # get_user_log,
     split_assessmentItemID,
     split_time,
     get_time_concentration,
