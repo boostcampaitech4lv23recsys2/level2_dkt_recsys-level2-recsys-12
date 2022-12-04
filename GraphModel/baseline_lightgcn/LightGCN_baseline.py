@@ -99,6 +99,7 @@ class LightGCN(torch.nn.Module):
     """
     def get_embedding(self, edge_index: Adj) -> Tensor:
         # 아래 두 줄은 초기에 embedding을 통과하는 부분입니다.
+        breakpoint()
         x = self.embedding.weight
         # alpha를 별도로 지정하지 않았으면, self.alpha[i]는 모두 같은 값을 가집니다.
         out = x * self.alpha[0]
@@ -166,7 +167,6 @@ class LightGCN(torch.nn.Module):
         # out_dst.shape:
         #               torch.Size([495046, 64]) == 각 interaction의 assessmentItem 기준으로의 embedding vector == torch.Size([모든 interaction, embedding_dim])
         out_dst = out[edge_label_index[1]]
-        breakpoint()
         return (out_src * out_dst).sum(dim=-1)
 
     def predict_link(self, edge_index: Adj, edge_label_index: OptTensor = None,

@@ -94,22 +94,22 @@ def split_time(df):
     new_data = df.copy()
     if new_data["Timestamp"].dtype == "object":
         new_data["Timestamp"] = df["Timestamp"].apply(make_datetime)
-    new_data["year"] = new_data["Timestamp"].dt.year
-    new_data["month"] = new_data["Timestamp"].dt.month
-    new_data["day"] = new_data["Timestamp"].dt.day
-    new_data["hour"] = new_data["Timestamp"].dt.hour
-    new_data["minute"] = new_data["Timestamp"].dt.minute
-    new_data["second"] = new_data["Timestamp"].dt.second
-    new_data["dayofweek"] = new_data["Timestamp"].dt.dayofweek
+    new_data["year"] = new_data["Timestamp"].dt.year.astype(int)
+    new_data["month"] = new_data["Timestamp"].dt.month.astype(int)
+    new_data["day"] = new_data["Timestamp"].dt.day.astype(int)
+    new_data["hour"] = new_data["Timestamp"].dt.hour.astype(int)
+    new_data["minute"] = new_data["Timestamp"].dt.minute.astype(int)
+    new_data["second"] = new_data["Timestamp"].dt.second.astype(int)
+    new_data["dayofweek"] = new_data["Timestamp"].dt.dayofweek.astype(int)
 
     return new_data
 
 
 def split_assessmentItemID(df):
     """Split assessmentItemID into size=3 tokens"""
-    df["first3"] = df["assessmentItemID"].apply(lambda x: x[1:4])
-    df["mid3"] = df["assessmentItemID"].apply(lambda x: x[4:7])
-    df["last3"] = df["assessmentItemID"].apply(lambda x: x[7:10])
+    df["first3"] = df["assessmentItemID"].apply(lambda x: x[1:4]).astype(int)
+    df["mid3"] = df["assessmentItemID"].apply(lambda x: x[4:7]).astype(int)
+    df["last3"] = df["assessmentItemID"].apply(lambda x: x[7:10]).astype(int)
     return df
 
 
