@@ -430,5 +430,18 @@ def seq_feature_engineering(df):
     return df
 
 
+# FEATURE ENGINEERING FUNCTION FOR LASTQUERY
+# ADD FUNCTIONS YOU WANT TO APPLY
+LQ_ADD_LIST = [
+    get_elapsed_time,
+]
+# ADD COLUMNS YOU WANT TO DROP
+LQ_DROP_LIST = []
+
+def lq_feature_engineering(df):
+    for func in LQ_ADD_LIST:
+        df = func(df)
+    return df.drop(LQ_DROP_LIST, axis=1)
+
 #####################################################################
 #####################################################################
