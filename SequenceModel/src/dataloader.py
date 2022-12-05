@@ -50,6 +50,8 @@ class Preprocess:
             "testId",
             "assessmentItemID",
             "KnowledgeTag",
+            
+            # features for lstmattn model
             "first3",
             "hour_answerCode_Level",
             "elapsedTime",
@@ -96,13 +98,13 @@ class Preprocess:
         return df
 
     def __feature_engineering(self, df):
-        df = fe.seq_feature_engineering(df)
+        # df = fe.seq_feature_engineering(df) # featured_train_data.csv 사용으로 대체
         return df
 
     def load_data_from_file(self, file_name, is_train=True):
         csv_file_path = os.path.join(self.args.data_dir, file_name)
         df = pd.read_csv(csv_file_path)  # , nrows=100000)
-        df = self.__feature_engineering(df)
+        # df = self.__feature_engineering(df) # featured_train_data.csv 사용으로 대체
         # df = self.__preprocessing(df, cate_cols, is_train)
         df = self.__preprocessing(df, is_train)
 
@@ -116,6 +118,8 @@ class Preprocess:
         self.args.n_tag = len(
             np.load(os.path.join(self.args.asset_dir, "KnowledgeTag_classes.npy"))
         )
+        
+        ## input sizes for lstmattn model
         self.args.n_first3 = len(
             np.load(os.path.join(self.args.asset_dir, "first3_classes.npy"))
         )
@@ -166,13 +170,15 @@ class Preprocess:
             )
         )
 
-        df = df.sort_values(by=["userID", "Timestamp"], axis=0)  # 정렬을 위해 Timestamp가 필요
+        df = df.sort_values(by=["userID", "Timestamp"], axis=0)
         columns = [
             "userID",
             "answerCode",
             "testId",
             "assessmentItemID",
             "KnowledgeTag",
+            
+            # features for lstmattn model
             "first3",
             "hour_answerCode_Level",
             "elapsedTime",
@@ -195,6 +201,8 @@ class Preprocess:
                     r["testId"].values,
                     r["assessmentItemID"].values,
                     r["KnowledgeTag"].values,
+                    
+                    ## features for lstmattn model
                     r["first3"].values,
                     r["hour_answerCode_Level"].values,
                     r["elapsedTime"].values,
@@ -235,6 +243,8 @@ class DKTDataset(torch.utils.data.Dataset):
             test,
             question,
             tag,
+            
+            # features for lstmattn model
             first3,
             hour_answerCode_Level,
             elapsedTime,
@@ -249,6 +259,8 @@ class DKTDataset(torch.utils.data.Dataset):
             row[1],
             row[2],
             row[3],
+            
+            # features for lstmattn model
             row[4],
             row[5],
             row[6],
@@ -265,6 +277,8 @@ class DKTDataset(torch.utils.data.Dataset):
             test,
             question,
             tag,
+            
+            # features for lstmattn model
             first3,
             hour_answerCode_Level,
             elapsedTime,

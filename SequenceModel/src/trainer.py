@@ -379,6 +379,8 @@ def process_batch(batch):
         test,
         question,
         tag,
+        
+        # features for lstmattn model
         first3,
         hour_answerCode_Level,
         elapsedTime,
@@ -410,6 +412,8 @@ def process_batch(batch):
     test = ((test + 1) * mask).int()
     question = ((question + 1) * mask).int()
     tag = ((tag + 1) * mask).int()
+    
+    # features for lstmattn model
     first3 = ((first3 + 1) * mask).int()
     hour_answerCode_Level = ((hour_answerCode_Level + 1) * mask).int()
     elapsedTime = ((elapsedTime + 1) * mask).int()
@@ -421,6 +425,7 @@ def process_batch(batch):
     ).int()
     userID_answerCode_mean = ((userID_answerCode_mean + 1) * mask).int()
     assessmentItemID_elo_pred = ((assessmentItemID_elo_pred + 1) * mask).int()
+    
     # features = [((feat + 1) * mask).int() for feat in batch[1 : len(batch) - 1]]
 
     # return (test, question, tag, correct, mask, interaction)
@@ -429,6 +434,8 @@ def process_batch(batch):
         test,
         question,
         tag,
+        
+        # features for lstmattn model
         first3,
         hour_answerCode_Level,
         elapsedTime,
