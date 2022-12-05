@@ -56,7 +56,7 @@ class Preprocess:
                 "testId",
                 "assessmentItemID",
                 "KnowledgeTag",
-                "first3",  # 여기서부터 lstmattn model에서 사용하는 feature
+                "first3",
                 "hour_answerCode_Level",
                 "elapsedTime",
                 "dayofweek_answerCode_median",
@@ -105,7 +105,9 @@ class Preprocess:
         if self.args.model == "lastquery":
             df = fe.lq_feature_engineering(df)
             return df
-        # df = fe.seq_feature_engineering(df) # featured_train_data.csv 사용으로 대체
+        else:
+            # 범주형으로 처리할 때, 감당 가능한 시간 내의 encoding을 지원하기 위해 소수점 4자리에서 자름
+            df["assessmentItemID_elo_pred"] = round(df["assessmentItemID_elo_pred"], 4)
         return df
 
     def load_data_from_file(self, file_name, is_train=True):
@@ -114,8 +116,8 @@ class Preprocess:
 
         if self.args.model == "lastquery":
             df = self.__feature_engineering(df)
-        # df = self.__feature_engineering(df) # featured_train_data.csv 사용으로 대체
-
+        else:
+            df = self.__feature_engineering(df)  # featured_train_data.csv 사용으로 대체
         df = self.__preprocessing(df, is_train)
 
         # 추후 feature를 embedding할 시에 embedding_layer의 input 크기를 결정할때 사용
@@ -136,7 +138,9 @@ class Preprocess:
             )
             self.args.n_hour_answerCode_Level = len(
                 np.load(
-                    os.path.join(self.args.asset_dir, "hour_answerCode_Level_classes.npy")
+                    os.path.join(
+                        self.args.asset_dir, "hour_answerCode_Level_classes.npy"
+                    )
                 )
             )
             self.args.n_elapsedTime = len(
@@ -158,19 +162,24 @@ class Preprocess:
             )
             self.args.n_hour_answerCode_mean = len(
                 np.load(
-                    os.path.join(self.args.asset_dir, "hour_answerCode_mean_classes.npy")
+                    os.path.join(
+                        self.args.asset_dir, "hour_answerCode_mean_classes.npy"
+                    )
                 )
             )
             self.args.n_KnowledgeTag_elapsedTime_median = len(
                 np.load(
                     os.path.join(
-                        self.args.asset_dir, "KnowledgeTag_elapsedTime_median_classes.npy"
+                        self.args.asset_dir,
+                        "KnowledgeTag_elapsedTime_median_classes.npy",
                     )
                 )
             )
             self.args.n_userID_answerCode_mean = len(
                 np.load(
-                    os.path.join(self.args.asset_dir, "userID_answerCode_mean_classes.npy")
+                    os.path.join(
+                        self.args.asset_dir, "userID_answerCode_mean_classes.npy"
+                    )
                 )
             )
             self.args.n_assessmentItemID_elo_pred = len(
@@ -198,7 +207,7 @@ class Preprocess:
                 "testId",
                 "assessmentItemID",
                 "KnowledgeTag",
-                "first3",  # 여기서부터 lstmattn model에서 사용하는 feature
+                "first3",
                 "hour_answerCode_Level",
                 "elapsedTime",
                 "dayofweek_answerCode_median",
@@ -233,7 +242,7 @@ class Preprocess:
                         r["testId"].values,
                         r["assessmentItemID"].values,
                         r["KnowledgeTag"].values,
-                        r["first3"].values,  # 여기서부터 lstmattn model에서 사용하는 feature
+                        r["first3"].values,
                         r["hour_answerCode_Level"].values,
                         r["elapsedTime"].values,
                         r["dayofweek_answerCode_median"].values,
@@ -276,7 +285,7 @@ class DKTDataset(torch.utils.data.Dataset):
                 test,
                 question,
                 tag,
-                first3,  # 여기서부터 lstmattn model에서 사용하는 feature
+                first3,
                 hour_answerCode_Level,
                 elapsedTime,
                 dayofweek_answerCode_median,
@@ -290,7 +299,7 @@ class DKTDataset(torch.utils.data.Dataset):
                 row[1],
                 row[2],
                 row[3],
-                row[4],  # 여기서부터 lstmattn model에서 사용하는 feature
+                row[4],
                 row[5],
                 row[6],
                 row[7],
@@ -306,7 +315,7 @@ class DKTDataset(torch.utils.data.Dataset):
                 test,
                 question,
                 tag,
-                first3,  # 여기서부터 lstmattn model에서 사용하는 feature
+                first3,
                 hour_answerCode_Level,
                 elapsedTime,
                 dayofweek_answerCode_median,
