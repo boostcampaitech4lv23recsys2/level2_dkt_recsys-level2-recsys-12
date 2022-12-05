@@ -99,7 +99,6 @@ class LightGCN(torch.nn.Module):
     """
     def get_embedding(self, edge_index: Adj) -> Tensor:
         # 아래 두 줄은 초기에 embedding을 통과하는 부분입니다.
-        breakpoint()
         x = self.embedding.weight
         # alpha를 별도로 지정하지 않았으면, self.alpha[i]는 모두 같은 값을 가집니다.
         out = x * self.alpha[0]
