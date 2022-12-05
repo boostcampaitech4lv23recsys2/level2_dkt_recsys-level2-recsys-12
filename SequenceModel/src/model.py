@@ -323,9 +323,20 @@ class LastQuery(nn.Module):
         )
         self.embedding_tag = nn.Embedding(self.args.n_tag + 1, self.hidden_dim // 3)
         self.embedding_position = nn.Embedding(self.args.max_seq_len, self.hidden_dim)
-
+        
+        self.elapsed_layer = nn.Linear(
+            1,  # number of continous feature
+            self.hidden_dim
+        )
+        
         # embedding combination projection
-        self.comb_proj = nn.Linear((self.hidden_dim // 3) * 4, self.hidden_dim)
+        self.comb_proj = nn.Linear(
+            self.hidden_dim * 2, self.hidden_dim
+        )
+        
+        self.comb_proj_cate = nn.Linear(
+            (self.hidden_dim // 3) * 4, self.hidden_dim
+        )
 
         # 기존 keetar님 솔루션에서는 Positional Embedding은 사용되지 않습니다
         # 하지만 사용 여부는 자유롭게 결정해주세요 :)
@@ -373,7 +384,7 @@ class LastQuery(nn.Module):
         return (h, c)
 
     def forward(self, input):
-        _, test, question, tag, mask, interaction = input
+        _, test, question, tag, elapsed, mask, interaction = input
         batch_size = interaction.size(0)
         seq_len = interaction.size(1)
 
@@ -383,7 +394,7 @@ class LastQuery(nn.Module):
         embed_question = self.embedding_question(question)
         embed_tag = self.embedding_tag(tag)
 
-        embed = torch.cat(
+        embed_cate = torch.cat(
             [
                 embed_interaction,
                 embed_test,
@@ -393,6 +404,11 @@ class LastQuery(nn.Module):
             2,
         )
 
+        embed_cate = self.comb_proj_cate(embed_cate)
+        conti = torch.stack([elapsed], 2)
+        elapsed_layer = self.elapsed_layer(conti)
+        
+        embed = torch.cat([embed_cate, elapsed_layer], 2)
         embed = self.comb_proj(embed)
 
         # Positional Embedding

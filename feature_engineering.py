@@ -15,6 +15,7 @@ from datetime import datetime
 
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
 
 
 def make_datetime(val):
@@ -266,6 +267,19 @@ def seq_feature_engineering(df):
         df = func(df)
     return df.drop(SEQ_DROP_LIST, axis=1), SEQ_CATE_COLS
 
+
+# FEATURE ENGINEERING FUNCTION FOR LASTQUERY
+# ADD FUNCTIONS YOU WANT TO APPLY
+LQ_ADD_LIST = [
+    get_elapsed_time,
+]
+# ADD COLUMNS YOU WANT TO DROP
+LQ_DROP_LIST = []
+
+def lq_feature_engineering(df):
+    for func in LQ_ADD_LIST:
+        df = func(df)
+    return df.drop(LQ_DROP_LIST, axis=1)
 
 #####################################################################
 #####################################################################

@@ -83,13 +83,19 @@ class Preprocess:
         return df
 
     def __feature_engineering(self, df):
+        if self.args.model == "lastquery":
+            df = fe.lq_feature_engineering(df)
+            return df
         df, cate_cols = fe.seq_feature_engineering(df)
         return df, cate_cols
 
     def load_data_from_file(self, file_name, is_train=True):
         csv_file_path = os.path.join(self.args.data_dir, file_name)
         df = pd.read_csv(csv_file_path)  # , nrows=100000)
-        df, cate_cols = self.__feature_engineering(df)
+        if self.args.model == "lastquery":
+            df = self.__feature_engineering(df)
+        else:
+            df, cate_cols = self.__feature_engineering(df)
         # df = self.__preprocessing(df, cate_cols, is_train)
         df = self.__preprocessing(df, is_train)
 
@@ -105,21 +111,41 @@ class Preprocess:
         )
 
         df = df.sort_values(by=["userID", "Timestamp"], axis=0)  # 정렬을 위해 Timestamp가 필요
-        columns = ["userID", "answerCode", "testId", "assessmentItemID", "KnowledgeTag"]
+        if self.args.model == "lastquery":
+            columns = ["userID", "answerCode", "testId", "assessmentItemID", "KnowledgeTag", "elapsedTime"]
+        else:
+            columns = ["userID", "answerCode", "testId", "assessmentItemID", "KnowledgeTag"]
         # columns = ["answerCode"] + cate_cols
-        group = (
-            # df[["userID"] + columns]
-            df[columns]
-            .groupby("userID")
-            .apply(
-                lambda r: (
-                    r["answerCode"].values,
-                    r["testId"].values,
-                    r["assessmentItemID"].values,
-                    r["KnowledgeTag"].values,
+        if self.args.model == "lastquery":
+            group = (
+                # df[["userID"] + columns]
+                df[columns]
+                .groupby("userID")
+                .apply(
+                    lambda r: (
+                        r["answerCode"].values,
+                        r["testId"].values,
+                        r["assessmentItemID"].values,
+                        r["KnowledgeTag"].values,
+                        r["elapsedTime"].values,
+                    )
+                    # lambda r: (tuple([r[col].values for col in columns]))
                 )
-                # lambda r: (tuple([r[col].values for col in columns]))
             )
+        else:
+            group = (
+                # df[["userID"] + columns]
+                df[columns]
+                .groupby("userID")
+                .apply(
+                    lambda r: (
+                        r["answerCode"].values,
+                        r["testId"].values,
+                        r["assessmentItemID"].values,
+                        r["KnowledgeTag"].values,
+                    )
+                    # lambda r: (tuple([r[col].values for col in columns]))
+                )
         )
 
         return group.values
@@ -143,30 +169,36 @@ class DKTDataset(torch.utils.data.Dataset):
         seq_len = len(row[0])
 
         # test, question, tag, correct = row[0], row[1], row[2], row[3]
-        correct, test, question, tag = row[0], row[1], row[2], row[3]
-
-        cate_cols = [correct, test, question, tag]
+        # correct, test, question, tag = row[0], row[1], row[2], row[3]
+        # elapsed = row[4]
+        conti_idx = [4] # continous feature 인덱스
         # cate_cols = [correct, test, question, tag]
+        feat_cols = list(row) # cate + conti
 
         # cate_cols = list(row)
 
         # max seq len을 고려하여서 이보다 길면 자르고 아닐 경우 그대로 냅둔다
         if seq_len > self.args.max_seq_len:
-            for i, col in enumerate(cate_cols):
-                cate_cols[i] = col[-self.args.max_seq_len :]
+            for i, col in enumerate(feat_cols): # cate -> feat
+                feat_cols[i] = col[-self.args.max_seq_len :]
             mask = np.ones(self.args.max_seq_len, dtype=np.int16)
         else:
             mask = np.zeros(self.args.max_seq_len, dtype=np.int16)
             mask[-seq_len:] = 1
 
         # mask도 columns 목록에 포함시킴
-        cate_cols.append(mask)
+        # cate_cols.append(mask)
+        feat_cols.append(mask)
 
         # np.array -> torch.tensor 형변환
-        for i, col in enumerate(cate_cols):
-            cate_cols[i] = torch.tensor(col)
+        for i, col in enumerate(feat_cols):
+            if i in conti_idx:
+                feat_cols[i] = torch.FloatTensor(col)
+            else:
+                feat_cols[i] = torch.tensor(col)
 
-        return cate_cols
+        # return cate_cols
+        return feat_cols
 
     def __len__(self):
         return len(self.data)
