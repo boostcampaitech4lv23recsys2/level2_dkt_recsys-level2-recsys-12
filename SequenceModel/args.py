@@ -19,7 +19,10 @@ def parse_args():
     )
 
     parser.add_argument(
-        "--file_name", default="featured_train_data.csv", type=str, help="train file name"
+        "--file_name",
+        default="featured_train_data.csv",
+        type=str,
+        help="train file name",
     )
 
     parser.add_argument(
@@ -33,7 +36,10 @@ def parse_args():
         "--output_dir", default="output/", type=str, help="output directory"
     )
     parser.add_argument(
-        "--test_file_name", default="test_data.csv", type=str, help="test file name"
+        "--test_file_name",
+        default="featured_test_data.csv",
+        type=str,
+        help="test file name",
     )
 
     parser.add_argument(

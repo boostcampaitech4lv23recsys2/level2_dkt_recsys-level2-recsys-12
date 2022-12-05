@@ -114,10 +114,6 @@ def run_kfold(args, train_data, preprocess, model):
 
         train_data_fold, valid_data_fold = preprocess.split_data(train_data)
         # only when using warmup scheduler
-        # args.total_steps = int(math.ceil(len(train_loader.dataset) / args.batch_size)) * (
-        #     args.n_epochs
-        # )
-        # args.warmup_steps = args.total_steps // 10
 
         # reset wandb for every fold
         if args.run_wandb:
@@ -130,9 +126,6 @@ def run_kfold(args, train_data, preprocess, model):
 
         # let users know which fold current fold is
         print(f"#################### Fold number {fold} ####################\n")
-
-        optimizer = get_optimizer(inner_model, args)
-        scheduler = get_scheduler(optimizer, args)
 
         train_subsampler = torch.utils.data.SubsetRandomSampler(train_idx)
         valid_subsampler = torch.utils.data.SubsetRandomSampler(valid_idx)
@@ -148,6 +141,14 @@ def run_kfold(args, train_data, preprocess, model):
             train_data,
             valid_subsampler,
         )
+
+        args.total_steps = int(
+            math.ceil(len(train_loader.dataset) / args.batch_size)
+        ) * (args.n_epochs)
+        args.warmup_steps = args.total_steps // 10
+
+        optimizer = get_optimizer(inner_model, args)
+        scheduler = get_scheduler(optimizer, args)
 
         best_auc = -1
         early_stopping_counter = 0
@@ -382,7 +383,7 @@ def process_batch(batch):
         test,
         question,
         tag,
-        first3,  # 여기서부터 lstmattn model에서 사용하는 feature
+        first3,
         hour_answerCode_Level,
         elapsedTime,
         dayofweek_answerCode_median,
@@ -428,7 +429,7 @@ def process_batch(batch):
         test,
         question,
         tag,
-        first3,  # 여기서부터 lstmattn model에서 사용하는 feature
+        first3,
         hour_answerCode_Level,
         elapsedTime,
         dayofweek_answerCode_median,
