@@ -45,20 +45,27 @@ class Preprocess:
         np.save(le_path, encoder.classes_)
 
     def __preprocessing(self, df, is_train=True):
-        cate_cols = [
-            "testId",
-            "assessmentItemID",
-            "KnowledgeTag",
-            "first3",  # 여기서부터 lstmattn model에서 사용하는 feature
-            "hour_answerCode_Level",
-            "elapsedTime",
-            "dayofweek_answerCode_median",
-            "KnowledgeTag_answerCode_mean",
-            "hour_answerCode_mean",
-            "KnowledgeTag_elapsedTime_median",
-            "userID_answerCode_mean",
-            "assessmentItemID_elo_pred",
-        ]
+        if self.args.model == "lastquery":
+            cate_cols = [
+                "testId",
+                "assessmentItemID",
+                "KnowledgeTag",
+            ]
+        else:
+            cate_cols = [
+                "testId",
+                "assessmentItemID",
+                "KnowledgeTag",
+                "first3",  # 여기서부터 lstmattn model에서 사용하는 feature
+                "hour_answerCode_Level",
+                "elapsedTime",
+                "dayofweek_answerCode_median",
+                "KnowledgeTag_answerCode_mean",
+                "hour_answerCode_mean",
+                "KnowledgeTag_elapsedTime_median",
+                "userID_answerCode_mean",
+                "assessmentItemID_elo_pred",
+            ]
 
         if not os.path.exists(self.args.asset_dir):
             os.makedirs(self.args.asset_dir)
@@ -122,56 +129,57 @@ class Preprocess:
             np.load(os.path.join(self.args.asset_dir, "KnowledgeTag_classes.npy"))
         )
 
-        ## input sizes for lstmattn model
-        self.args.n_first3 = len(
-            np.load(os.path.join(self.args.asset_dir, "first3_classes.npy"))
-        )
-        self.args.n_hour_answerCode_Level = len(
-            np.load(
-                os.path.join(self.args.asset_dir, "hour_answerCode_Level_classes.npy")
+        if not self.args.model == "lastquery":
+            ## input sizes for lstmattn model
+            self.args.n_first3 = len(
+                np.load(os.path.join(self.args.asset_dir, "first3_classes.npy"))
             )
-        )
-        self.args.n_elapsedTime = len(
-            np.load(os.path.join(self.args.asset_dir, "elapsedTime_classes.npy"))
-        )
-        self.args.n_dayofweek_answerCode_median = len(
-            np.load(
-                os.path.join(
-                    self.args.asset_dir, "dayofweek_answerCode_median_classes.npy"
+            self.args.n_hour_answerCode_Level = len(
+                np.load(
+                    os.path.join(self.args.asset_dir, "hour_answerCode_Level_classes.npy")
                 )
             )
-        )
-        self.args.n_KnowledgeTag_answerCode_mean = len(
-            np.load(
-                os.path.join(
-                    self.args.asset_dir, "KnowledgeTag_answerCode_mean_classes.npy"
+            self.args.n_elapsedTime = len(
+                np.load(os.path.join(self.args.asset_dir, "elapsedTime_classes.npy"))
+            )
+            self.args.n_dayofweek_answerCode_median = len(
+                np.load(
+                    os.path.join(
+                        self.args.asset_dir, "dayofweek_answerCode_median_classes.npy"
+                    )
                 )
             )
-        )
-        self.args.n_hour_answerCode_mean = len(
-            np.load(
-                os.path.join(self.args.asset_dir, "hour_answerCode_mean_classes.npy")
-            )
-        )
-        self.args.n_KnowledgeTag_elapsedTime_median = len(
-            np.load(
-                os.path.join(
-                    self.args.asset_dir, "KnowledgeTag_elapsedTime_median_classes.npy"
+            self.args.n_KnowledgeTag_answerCode_mean = len(
+                np.load(
+                    os.path.join(
+                        self.args.asset_dir, "KnowledgeTag_answerCode_mean_classes.npy"
+                    )
                 )
             )
-        )
-        self.args.n_userID_answerCode_mean = len(
-            np.load(
-                os.path.join(self.args.asset_dir, "userID_answerCode_mean_classes.npy")
-            )
-        )
-        self.args.n_assessmentItemID_elo_pred = len(
-            np.load(
-                os.path.join(
-                    self.args.asset_dir, "assessmentItemID_elo_pred_classes.npy"
+            self.args.n_hour_answerCode_mean = len(
+                np.load(
+                    os.path.join(self.args.asset_dir, "hour_answerCode_mean_classes.npy")
                 )
             )
-        )
+            self.args.n_KnowledgeTag_elapsedTime_median = len(
+                np.load(
+                    os.path.join(
+                        self.args.asset_dir, "KnowledgeTag_elapsedTime_median_classes.npy"
+                    )
+                )
+            )
+            self.args.n_userID_answerCode_mean = len(
+                np.load(
+                    os.path.join(self.args.asset_dir, "userID_answerCode_mean_classes.npy")
+                )
+            )
+            self.args.n_assessmentItemID_elo_pred = len(
+                np.load(
+                    os.path.join(
+                        self.args.asset_dir, "assessmentItemID_elo_pred_classes.npy"
+                    )
+                )
+            )
 
         df = df.sort_values(by=["userID", "Timestamp"], axis=0)
         if self.args.model == "lastquery":
