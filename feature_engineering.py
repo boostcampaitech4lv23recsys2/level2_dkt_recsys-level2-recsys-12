@@ -8,7 +8,7 @@
     split_time,
     split_assessmentItemID,
     get_time_concentration,
-    # get_user_log,             # 현재 일시 비활성화 상태입니다
+    get_user_log,
     get_seoson_concentration,
 """
 from datetime import datetime
@@ -343,7 +343,7 @@ ADD_LIST = [
     get_groupby_tag_features,
     get_groupby_dayofweek_features,
     get_groupby_user_first3_features,
-    # get_user_log,
+    get_user_log,
     split_assessmentItemID,
     split_time,
     get_time_concentration,
@@ -369,27 +369,29 @@ def feature_engineering(df):
 
 # ADD FUNCTIONS YOU WANT TO APPLY
 SEQ_ADD_LIST = [
+    get_groupby_user_features,
+    get_groupby_test_features,
+    get_groupby_item_features,
+    get_groupby_tag_features,
+    get_groupby_dayofweek_features,
+    get_groupby_user_first3_features,
     split_assessmentItemID,
-]
-# ADD COLUMNS YOU WANT TO DROP
-SEQ_DROP_LIST = []
-# ADD COLUMNS WHOSE TYPE IS CATEGOCY
-SEQ_CATE_COLS = [
-    "assessmentItemID",
-    "testId",
-    "KnowledgeTag",
-    "first3",
+    split_time,
+    get_time_concentration,
+    get_season_concentration,
+    get_elapsed_time,
+    get_median_time,
+    get_median_time_with_answerCode,
 ]
 
 # FEATURE ENGINEERING FUNCTION FOR SEQUENCE MODEL
 def seq_feature_engineering(df):
     """
-    make features in SEQ_ADD_LIST (not in SEQ_DROP_LIST)
+    Make features in ADD_LIST
     """
-    for func in SEQ_ADD_LIST:
+    for func in ADD_LIST:
         df = func(df)
-    return df.drop(SEQ_DROP_LIST, axis=1), SEQ_CATE_COLS
-
+    return df
 
 #####################################################################
 #####################################################################
