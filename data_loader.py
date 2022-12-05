@@ -9,12 +9,17 @@ sys.path.append("/opt/ml/input/code")
 
 import feature_engineering as fe
 
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import KBinsDiscretizer, LabelEncoder, MinMaxScaler
 from sklearn.decomposition import PCA
+from sklearn.model_selection import train_test_split
+from sklearn.cluster import KMeans
+from collections import Counter
 
 import pandas as pd
 import numpy as np
 
+import warnings
+warnings.filterwarnings('ignore')
 
 
 def load_data(path="/opt/ml/input/data", IS_CUSTOM=False):
@@ -219,3 +224,113 @@ def lgbm_data_loader(IS_CUSTOM=False,USE_VALID=True, DROPS=[], valid_len=3):
     valid = valid.drop(["answerCode"], axis=1)
     return train, valid, y_train, y_valid, test
 
+################################# Tabnet #################################
+def show_process(func):
+    def wrapFunc(*args, **kargs):
+        print("Start", func.__name__)
+        func(*args, **kargs)
+        print("End", func.__name__)
+    return wrapFunc
+    
+class DataLoader:
+    def __init__(self, path="../data", IS_CUSTOM=True):
+        self.load_data(path=path, IS_CUSTOM=IS_CUSTOM)
+        self.entire_df = pd.concat([self.raw_train, self.raw_test]).drop_duplicates().sort_values(["userID","Timestamp"])
+        self.preprocessing(self.entire_df)
+        self.train_test_split(self.preprocessed_df)
+    @show_process    
+    def load_data(self, path="../data", IS_CUSTOM=True):
+        self.raw_train = pd.read_csv(path+"/train_data.csv")
+        self.raw_test = pd.read_csv(path+"/test_data.csv") if IS_CUSTOM else pd.read_csv(path+"/custom_test_data.csv")
+    @show_process
+    def train_test_split(self, data):
+        self.train_df = data[data["answerCode"] != -1]
+        self.test_df = data[data["answerCode"] == -1]
+    @show_process
+    def preprocessing(self, data):
+        self.preprocessed_df = fe.feature_engineering(data)
+
+class TabnetDataLoader(DataLoader):
+    def __init__(self, IS_CUSTOM=True, test_size=0.2, USE_VALID=True, DROPS=[], path="../data", binning=True):
+        super().__init__(IS_CUSTOM=True, path=path)
+        self.test_size = test_size
+        self.X_train = None
+        self.X_valid = None
+        self.X_test = None
+        self.y_train = None
+        self.y_valid = None
+        self.y_test = None
+        self.first3_knowledgeTag_clustering()
+
+        if not USE_VALID:
+            self.test_size=-1
+
+        self.train_df.drop(DROPS, axis=1, inplace=True)
+        self.test_df.drop(DROPS, axis=1, inplace=True)
+        self.X_test = self.test_df.drop("answerCode",axis=1)
+        self.y_test = self.test_df.answerCode if IS_CUSTOM else None
+        if binning:
+            self.labeling()
+        
+        self.train_valid_split(self.test_size)
+
+    @show_process
+    def first3_knowledgeTag_clustering(self):
+        cluster = KMeans(n_clusters=44)
+        minmax_scaler = MinMaxScaler()
+        minmax_scaler.fit(self.train_df[["KnowledgeTag","first3"]])
+        minmax_scaled_train = minmax_scaler.transform(self.train_df[["KnowledgeTag","first3"]])
+        minmax_scaled_test = minmax_scaler.transform(self.test_df[["KnowledgeTag","first3"]])
+        cluster.fit(minmax_scaled_train)
+        self.train_df["tag_first3_cluster"] = cluster.predict(minmax_scaled_train)
+        self.test_df["tag_first3_cluster"] = cluster.predict(minmax_scaled_test)
+
+    # @show_process
+    def binning(self, col, n_bins):
+        binner = KBinsDiscretizer(n_bins=n_bins, encode="ordinal", strategy="kmeans")
+        binner.fit(self.train_df[col].values.reshape(-1,1))
+        self.train_df[col] = binner.transform(self.train_df[col].values.reshape(-1,1)).astype(int)
+        self.test_df[col] = binner.transform(self.test_df[col].values.reshape(-1,1)).astype(int)
+
+    # @show_process
+    def label_encoding(self,col):
+        encoder = LabelEncoder()
+        encoder.fit(pd.concat([self.train_df[col], self.test_df[col]]))
+        self.train_df[col] = encoder.transform(self.train_df[col].copy())
+        self.test_df[col] = encoder.transform(self.test_df[col].copy())
+
+    @show_process
+    def labeling(self):
+        for col in self.train_df.columns:
+            if col.split("_")[-1] in ("mean", "count", "var", "median"):
+                n_bin = self.train_df[col].nunique()//20
+                if n_bin > 4:
+                    self.binning(col, n_bin)
+                else:
+                    self.label_encoding(col)
+            elif col == "elapsedTime":
+                self.binning(col, 10)
+            elif col in ["assessmentItemID", "testId"]:
+                self.label_encoding(col)
+                
+    @show_process
+    def train_valid_split(self,test_size):
+        if test_size <= 0:
+            self.X_train = self.train_df.drop("answerCode",axis=1)
+            self.y_train = self.train_df.answerCode
+            return
+        train_idx = np.array([])
+        offset = 0
+        for key, nunique in Counter(self.train_df.userID).items():
+            data = np.arange(nunique).reshape(-1,1) + offset
+            tidx, _, _, _ = train_test_split(data,data,test_size=test_size, random_state=42)
+            train_idx = np.append(train_idx, tidx)
+            offset += nunique
+        idx = np.array([False]*len(self.train_df))
+        idx[train_idx.astype(int)]=True
+
+        self.X_train = self.train_df[idx].drop("answerCode",axis=1)
+        self.y_train = self.train_df[idx].answerCode
+        self.X_valid = self.train_df[~idx].drop("answerCode",axis=1)
+        self.y_valid = self.train_df[~idx].answerCode
+        print(f"X_train:{self.X_train.shape}\ny_train:{self.y_train.shape}\nX_valid:{self.X_valid.shape}\ny_valid:{self.y_valid.shape}")
