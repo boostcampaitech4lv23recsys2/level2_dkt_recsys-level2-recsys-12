@@ -10,14 +10,13 @@ warnings.filterwarnings(action="ignore")
 
 import numpy as np
 import torch
-from sklearn.model_selection import KFold
-
 import wandb
+from sklearn.model_selection import KFold
 
 from .criterion import get_criterion
 from .dataloader import data_augmentation, get_loaders, get_loaders_kfold
 from .metric import get_metric
-from .model import LSTM, LSTMATTN, Bert, LastQuery, Saint
+from .model import LSTM, LSTMATTN, Bert, LastQuery
 from .optimizer import get_optimizer
 from .scheduler import get_scheduler
 
@@ -375,7 +374,25 @@ def process_batch(batch):
     # batch[3]: correct, batch[-1]: mask
 
     # test, question, tag, correct, mask = batch
-    correct, test, question, tag, mask = batch
+    (
+        correct,
+        test,
+        question,
+        tag,
+        
+        # features for lstmattn model
+        first3,
+        hour_answerCode_Level,
+        elapsedTime,
+        dayofweek_answerCode_median,
+        KnowledgeTag_answerCode_mean,
+        hour_answerCode_mean,
+        KnowledgeTag_elapsedTime_median,
+        userID_answerCode_mean,
+        assessmentItemID_elo_pred,
+        mask,
+    ) = batch
+
     # correct, test, question, tag, mask = batch # batch = [correct, ...features..., mask]
 
     # change to float
@@ -395,10 +412,43 @@ def process_batch(batch):
     test = ((test + 1) * mask).int()
     question = ((question + 1) * mask).int()
     tag = ((tag + 1) * mask).int()
+    
+    # features for lstmattn model
+    first3 = ((first3 + 1) * mask).int()
+    hour_answerCode_Level = ((hour_answerCode_Level + 1) * mask).int()
+    elapsedTime = ((elapsedTime + 1) * mask).int()
+    dayofweek_answerCode_median = ((dayofweek_answerCode_median + 1) * mask).int()
+    KnowledgeTag_answerCode_mean = ((KnowledgeTag_answerCode_mean + 1) * mask).int()
+    hour_answerCode_mean = ((hour_answerCode_mean + 1) * mask).int()
+    KnowledgeTag_elapsedTime_median = (
+        (KnowledgeTag_elapsedTime_median + 1) * mask
+    ).int()
+    userID_answerCode_mean = ((userID_answerCode_mean + 1) * mask).int()
+    assessmentItemID_elo_pred = ((assessmentItemID_elo_pred + 1) * mask).int()
+    
     # features = [((feat + 1) * mask).int() for feat in batch[1 : len(batch) - 1]]
 
     # return (test, question, tag, correct, mask, interaction)
-    return (correct, test, question, tag, mask, interaction)
+    return (
+        correct,
+        test,
+        question,
+        tag,
+        
+        # features for lstmattn model
+        first3,
+        hour_answerCode_Level,
+        elapsedTime,
+        dayofweek_answerCode_median,
+        KnowledgeTag_answerCode_mean,
+        hour_answerCode_mean,
+        KnowledgeTag_elapsedTime_median,
+        userID_answerCode_mean,
+        assessmentItemID_elo_pred,
+        mask,
+        interaction,
+    )
+
     # return (correct, *features, mask, interaction)
 
 

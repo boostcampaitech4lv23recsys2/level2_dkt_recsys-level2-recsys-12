@@ -19,7 +19,7 @@ def parse_args():
     )
 
     parser.add_argument(
-        "--file_name", default="train_data.csv", type=str, help="train file name"
+        "--file_name", default="featured_train_data.csv", type=str, help="train file name"
     )
 
     parser.add_argument(
