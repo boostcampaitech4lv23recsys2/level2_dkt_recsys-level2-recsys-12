@@ -108,9 +108,9 @@ def split_time(df):
 
 def split_assessmentItemID(df):
     """Split assessmentItemID into size=3 tokens"""
-    df["first3"] = df["assessmentItemID"].apply(lambda x: x[1:4]).astype(int)
-    df["mid3"] = df["assessmentItemID"].apply(lambda x: x[4:7]).astype(int)
-    df["last3"] = df["assessmentItemID"].apply(lambda x: x[7:10]).astype(int)
+    df["first3"] = df["assessmentItemID"].apply(lambda x: int(x[1:4])//10-1)
+    df["mid3"] = df["assessmentItemID"].apply(lambda x: int(x[4:7])-1)
+    df["last3"] = df["assessmentItemID"].apply(lambda x: int(x[7:10])-1)
     return df
 
 
