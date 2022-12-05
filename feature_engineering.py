@@ -156,6 +156,7 @@ def get_season_concentration(df):
 
 def get_elapsed_time(df):
     """Get elapsed time from 'Timestamp'"""
+    df["Timestamp"] = pd.to_datetime(df["Timestamp"])
     df["elapsedTime"] = pd.to_timedelta(df["Timestamp"] - df["Timestamp"].shift(1))
     df["elapsedTime"] = df["elapsedTime"].dt.total_seconds()
     minus_idx = df["elapsedTime"] < 0
@@ -428,6 +429,21 @@ def seq_feature_engineering(df):
     for func in ADD_LIST:
         df = func(df)
     return df
+
+
+# FEATURE ENGINEERING FUNCTION FOR LASTQUERY
+# ADD FUNCTIONS YOU WANT TO APPLY
+LQ_ADD_LIST = [
+    get_elapsed_time,
+]
+# ADD COLUMNS YOU WANT TO DROP
+LQ_DROP_LIST = []
+
+
+def lq_feature_engineering(df):
+    for func in LQ_ADD_LIST:
+        df = func(df)
+    return df.drop(LQ_DROP_LIST, axis=1)
 
 
 #####################################################################

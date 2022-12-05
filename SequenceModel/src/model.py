@@ -28,22 +28,9 @@ class LSTM(nn.Module):
             self.args.n_questions + 1, self.hidden_dim // 3
         )
         self.embedding_tag = nn.Embedding(self.args.n_tag + 1, self.hidden_dim // 3)
-        # self.embedding_list = [
-        #     nn.Embedding(input_size + 1, self.hidden_dim // 3, device=args.device)
-        #     for input_size in self.args.embed_layer_input_size_list
-        # ]
-        # line 27에서, nn.Embedding에 device를 넣어줘야만 에러가 해결되는 현상이 있음.
-        # 에러 해결을 위해 torch 버전을 바꾸면, cuda가 사용 불가능한 상황
-        # 정확한 원인이나 해결책은 모르겠음. 버그가 아닌가 싶기도 함
-        # 일단은 nn.Embedding에 device를 추가적으로 지정해주니 에러가 해결됨
-        # 발생했던 에러:
-        # RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cpu and cuda:0! (when checking argument for argument index in method wrapper__index_select)
 
         # embedding combination projection
         self.comb_proj = nn.Linear((self.hidden_dim // 3) * 4, self.hidden_dim)
-        # self.comb_proj = nn.Linear(
-        #     (self.hidden_dim // 3) * (1 + len(self.embedding_list)), self.hidden_dim
-        # )
 
         self.lstm = nn.LSTM(
             self.hidden_dim, self.hidden_dim, self.n_layers, batch_first=True
@@ -53,11 +40,6 @@ class LSTM(nn.Module):
         self.fc = nn.Linear(self.hidden_dim, 1)
 
     def forward(self, input):
-        # input[3]: correct, input[-1]: interaction, input[-2]: mask
-
-        # test, question, tag, _, mask, interaction = input
-        # _, test, question, tag, mask, interaction = input
-        # _, test, question, tag, mask, interaction = input
 
         (
             _,
@@ -78,18 +60,12 @@ class LSTM(nn.Module):
         ) = input
 
         batch_size = interaction.size(0)
-        # batch_size = input[-1].size(0)
 
         # Embedding
         embed_interaction = self.embedding_interaction(interaction)
-        # embed_interaction = self.embedding_interaction(input[-1])
         embed_test = self.embedding_test(test)
         embed_question = self.embedding_question(question)
         embed_tag = self.embedding_tag(tag)
-        # embed_list = [
-        #     self.embedding_list[i](input[i + 1])
-        #     for i in range(len(self.embedding_list))
-        # ]
 
         embed = torch.cat(
             [
@@ -100,10 +76,6 @@ class LSTM(nn.Module):
             ],
             2,
         )
-        # embed = torch.cat(
-        #     [embed_interaction] + embed_list,
-        #     2,
-        # )
 
         X = self.comb_proj(embed)
 
@@ -159,16 +131,9 @@ class LSTMATTN(nn.Module):
         self.embedding_assessmentItemID_elo_pred = nn.Embedding(
             self.args.n_assessmentItemID_elo_pred + 1, self.hidden_dim // 3
         )
-        # self.embedding_list = [
-        #     nn.Embedding(input_size + 1, self.hidden_dim // 3, device=args.device)
-        #     for input_size in self.args.embed_layer_input_size_list
-        # ]
 
         # embedding combination projection
         self.comb_proj = nn.Linear((self.hidden_dim // 3) * 13, self.hidden_dim)
-        # self.comb_proj = nn.Linear(
-        #     (self.hidden_dim // 3) * (1 + len(self.embedding_list)), self.hidden_dim
-        # )
 
         self.lstm = nn.LSTM(
             self.hidden_dim, self.hidden_dim, self.n_layers, batch_first=True
@@ -191,9 +156,7 @@ class LSTMATTN(nn.Module):
         self.activation = nn.Sigmoid()
 
     def forward(self, input):
-        # input[3]: correct, input[-1]: interaction, input[-2]: mask
 
-        # test, question, tag, _, mask, interaction = input
         (
             _,
             test,
@@ -212,14 +175,10 @@ class LSTMATTN(nn.Module):
             interaction,
         ) = input
 
-        # _, test, question, tag, mask, interaction = input
-
         batch_size = interaction.size(0)
-        # batch_size = input[-1].size(0)
 
         # Embedding
         embed_interaction = self.embedding_interaction(interaction)
-        # embed_interaction = self.embedding_interaction(input[-1])
         embed_test = self.embedding_test(test)
         embed_question = self.embedding_question(question)
         embed_tag = self.embedding_tag(tag)
@@ -248,10 +207,6 @@ class LSTMATTN(nn.Module):
         embed_assessmentItemID_elo_pred = self.embedding_assessmentItemID_elo_pred(
             assessmentItemID_elo_pred
         )
-        # embed_list = [
-        #     self.embedding_list[i](input[i + 1])
-        #     for i in range(len(self.embedding_list))
-        # ]
 
         embed = torch.cat(
             [
@@ -271,10 +226,6 @@ class LSTMATTN(nn.Module):
             ],
             2,
         )
-        # embed = torch.cat(
-        #     [embed_interaction] + embed_list,
-        #     2,
-        # )
 
         X = self.comb_proj(embed)
 
@@ -282,7 +233,6 @@ class LSTMATTN(nn.Module):
         out = out.contiguous().view(batch_size, -1, self.hidden_dim)
 
         extended_attention_mask = mask.unsqueeze(1).unsqueeze(2)
-        # extended_attention_mask = input[-2].unsqueeze(1).unsqueeze(2)
         extended_attention_mask = extended_attention_mask.to(dtype=torch.float32)
         extended_attention_mask = (1.0 - extended_attention_mask) * -10000.0
         head_mask = [None] * self.n_layers
@@ -311,16 +261,9 @@ class Bert(nn.Module):
             self.args.n_questions + 1, self.hidden_dim // 3
         )
         self.embedding_tag = nn.Embedding(self.args.n_tag + 1, self.hidden_dim // 3)
-        # self.embedding_list = [
-        #     nn.Embedding(input_size + 1, self.hidden_dim // 3, device=args.device)
-        #     for input_size in self.args.embed_layer_input_size_list
-        # ]
 
         # embedding combination projection
         self.comb_proj = nn.Linear((self.hidden_dim // 3) * 4, self.hidden_dim)
-        # self.comb_proj = nn.Linear(
-        #     (self.hidden_dim // 3) * (1 + len(self.embedding_list)), self.hidden_dim
-        # )
 
         # Bert config
         self.config = BertConfig(
@@ -341,11 +284,6 @@ class Bert(nn.Module):
         self.activation = nn.Sigmoid()
 
     def forward(self, input):
-        # input[3]: correct, input[-1]: interaction, input[-2]: mask
-
-        # test, question, tag, _, mask, interaction = input
-        # _, test, question, tag, mask, interaction = input
-        # _, test, question, tag, mask, interaction = input
 
         (
             _,
@@ -366,18 +304,12 @@ class Bert(nn.Module):
         ) = input
 
         batch_size = interaction.size(0)
-        # batch_size = input[-1].size(0)
 
         # Embedding
         embed_interaction = self.embedding_interaction(interaction)
-        # embed_interaction = self.embedding_interaction(input[-1])
         embed_test = self.embedding_test(test)
         embed_question = self.embedding_question(question)
         embed_tag = self.embedding_tag(tag)
-        # embed_list = [
-        #     self.embedding_list[i](input[i + 1])
-        #     for i in range(len(self.embedding_list))
-        # ]
 
         embed = torch.cat(
             [
@@ -388,16 +320,11 @@ class Bert(nn.Module):
             ],
             2,
         )
-        # embed = torch.cat(
-        #     [embed_interaction] + embed_list,
-        #     2,
-        # )
 
         X = self.comb_proj(embed)
 
         # Bert
         encoded_layers = self.encoder(inputs_embeds=X, attention_mask=mask)
-        # encoded_layers = self.encoder(inputs_embeds=X, attention_mask=input[-2])
         out = encoded_layers[0]
 
         out = out.contiguous().view(batch_size, -1, self.hidden_dim)
@@ -438,8 +365,14 @@ class LastQuery(nn.Module):
         self.embedding_tag = nn.Embedding(self.args.n_tag + 1, self.hidden_dim // 3)
         self.embedding_position = nn.Embedding(self.args.max_seq_len, self.hidden_dim)
 
+        self.elapsed_layer = nn.Linear(
+            1, self.hidden_dim  # number of continous feature
+        )
+
         # embedding combination projection
-        self.comb_proj = nn.Linear((self.hidden_dim // 3) * 4, self.hidden_dim)
+        self.comb_proj = nn.Linear(self.hidden_dim * 2, self.hidden_dim)
+
+        self.comb_proj_cate = nn.Linear((self.hidden_dim // 3) * 4, self.hidden_dim)
 
         # 기존 keetar님 솔루션에서는 Positional Embedding은 사용되지 않습니다
         # 하지만 사용 여부는 자유롭게 결정해주세요 :)
@@ -487,25 +420,8 @@ class LastQuery(nn.Module):
         return (h, c)
 
     def forward(self, input):
+        _, test, question, tag, elapsed, mask, interaction = input
         # _, test, question, tag, mask, interaction = input
-
-        (
-            _,
-            test,
-            question,
-            tag,
-            first3,
-            hour_answerCode_Level,
-            elapsedTime,
-            dayofweek_answerCode_median,
-            KnowledgeTag_answerCode_mean,
-            hour_answerCode_mean,
-            KnowledgeTag_elapsedTime_median,
-            userID_answerCode_mean,
-            assessmentItemID_elo_pred,
-            mask,
-            interaction,
-        ) = input
 
         batch_size = interaction.size(0)
         seq_len = interaction.size(1)
@@ -516,7 +432,7 @@ class LastQuery(nn.Module):
         embed_question = self.embedding_question(question)
         embed_tag = self.embedding_tag(tag)
 
-        embed = torch.cat(
+        embed_cate = torch.cat(
             [
                 embed_interaction,
                 embed_test,
@@ -526,6 +442,11 @@ class LastQuery(nn.Module):
             2,
         )
 
+        embed_cate = self.comb_proj_cate(embed_cate)
+        conti = torch.stack([elapsed], 2)
+        elapsed_layer = self.elapsed_layer(conti)
+
+        embed = torch.cat([embed_cate, elapsed_layer], 2)
         embed = self.comb_proj(embed)
 
         # Positional Embedding

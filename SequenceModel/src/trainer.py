@@ -216,11 +216,12 @@ def train(train_loader, model, optimizer, scheduler, args, gradient=False):
     total_targets = []
     losses = []
     for step, batch in enumerate(train_loader):
-        # input[3]: correct, input[-1]: interaction, input[-2]: mask
-        input = list(map(lambda t: t.to(args.device), process_batch(batch)))
+        if args.model == "lastquery":
+            input = list(map(lambda t: t.to(args.device), process_batch_lq(batch)))
+        else:
+            input = list(map(lambda t: t.to(args.device), process_batch(batch)))
         preds = model(input)
-        # targets = input[3]  # correct
-        targets = input[0]  # correct is moved to index 0
+        targets = input[0]  # correct: 0
 
         loss = compute_loss(preds, targets)
         update_params(loss, model, optimizer, scheduler, args)
@@ -252,12 +253,13 @@ def validate(valid_loader, model, args):
     total_preds = []
     total_targets = []
     for step, batch in enumerate(valid_loader):
-        # input[3]: correct, input[-1]: interaction, input[-2]: mask
-        input = list(map(lambda t: t.to(args.device), process_batch(batch)))
+        if args.model == "lastquery":
+            input = list(map(lambda t: t.to(args.device), process_batch_lq(batch)))
+        else:
+            input = list(map(lambda t: t.to(args.device), process_batch(batch)))
 
         preds = model(input)
-        # targets = input[3]  # correct
-        targets = input[0]  # correct is moved to index 0
+        targets = input[0]  # correct: 0
 
         # predictions
         preds = preds[:, -1]
@@ -285,7 +287,10 @@ def inference(args, test_data, model):
     total_preds = []
 
     for step, batch in enumerate(test_loader):
-        input = list(map(lambda t: t.to(args.device), process_batch(batch)))
+        if args.model == "lastquery":
+            input = list(map(lambda t: t.to(args.device), process_batch_lq(batch)))
+        else:
+            input = list(map(lambda t: t.to(args.device), process_batch(batch)))
 
         preds = model(input)
 
@@ -317,7 +322,10 @@ def inference_kfold(args, test_data, model, fold):
     total_preds = []
 
     for step, batch in enumerate(test_loader):
-        input = list(map(lambda t: t.to(args.device), process_batch(batch)))
+        if args.model == "lastquery":
+            input = list(map(lambda t: t.to(args.device), process_batch_lq(batch)))
+        else:
+            input = list(map(lambda t: t.to(args.device), process_batch(batch)))
 
         preds = model(input)
 
@@ -327,7 +335,6 @@ def inference_kfold(args, test_data, model, fold):
         preds = preds.cpu().detach().numpy()
         total_preds += list(preds)
 
-    time = datetime.now().strftime("%m.%d_%H%M%S")
     write_path = os.path.join(args.output_dir, f"{args.model}_{fold}.csv")
     if not os.path.exists(args.output_dir):
         os.makedirs(args.output_dir)
@@ -347,8 +354,6 @@ def get_model(args):
         model = LSTMATTN(args)
     if args.model == "bert":
         model = Bert(args)
-    if args.model == "saint":
-        model = Saint(args)
     if args.model == "lastquery":
         model = LastQuery(args)
 
@@ -371,17 +376,13 @@ def get_gradient(model):
 
 # 배치 전처리
 def process_batch(batch):
-    # batch[3]: correct, batch[-1]: mask
 
-    # test, question, tag, correct, mask = batch
     (
         correct,
         test,
         question,
         tag,
-        
-        # features for lstmattn model
-        first3,
+        first3,  # 여기서부터 lstmattn model에서 사용하는 feature
         hour_answerCode_Level,
         elapsedTime,
         dayofweek_answerCode_median,
@@ -393,13 +394,9 @@ def process_batch(batch):
         mask,
     ) = batch
 
-    # correct, test, question, tag, mask = batch # batch = [correct, ...features..., mask]
-
     # change to float
     mask = mask.float()
     correct = correct.float()
-    # mask = batch[-1].float()
-    # correct = batch[0].float()
 
     # interaction을 임시적으로 correct를 한칸 우측으로 이동한 것으로 사용
     interaction = correct + 1  # 패딩을 위해 correct값에 1을 더해준다.
@@ -412,8 +409,8 @@ def process_batch(batch):
     test = ((test + 1) * mask).int()
     question = ((question + 1) * mask).int()
     tag = ((tag + 1) * mask).int()
-    
-    # features for lstmattn model
+
+    # 여기서부터 lstmattn model에서 사용하는 feature
     first3 = ((first3 + 1) * mask).int()
     hour_answerCode_Level = ((hour_answerCode_Level + 1) * mask).int()
     elapsedTime = ((elapsedTime + 1) * mask).int()
@@ -425,18 +422,13 @@ def process_batch(batch):
     ).int()
     userID_answerCode_mean = ((userID_answerCode_mean + 1) * mask).int()
     assessmentItemID_elo_pred = ((assessmentItemID_elo_pred + 1) * mask).int()
-    
-    # features = [((feat + 1) * mask).int() for feat in batch[1 : len(batch) - 1]]
 
-    # return (test, question, tag, correct, mask, interaction)
     return (
         correct,
         test,
         question,
         tag,
-        
-        # features for lstmattn model
-        first3,
+        first3,  # 여기서부터 lstmattn model에서 사용하는 feature
         hour_answerCode_Level,
         elapsedTime,
         dayofweek_answerCode_median,
@@ -449,7 +441,34 @@ def process_batch(batch):
         interaction,
     )
 
-    # return (correct, *features, mask, interaction)
+
+# 배치 전처리 for lastquery
+def process_batch_lq(batch):
+
+    # test, question, tag, correct, mask = batch
+    correct, test, question, tag, elapsed, mask = batch
+    # correct, test, question, tag, mask = batch # batch = [correct, ...features..., mask]
+
+    # change to float
+    mask = mask.float()
+    correct = correct.float()
+
+    # interaction을 임시적으로 correct를 한칸 우측으로 이동한 것으로 사용
+    interaction = correct + 1  # 패딩을 위해 correct값에 1을 더해준다.
+    interaction = interaction.roll(shifts=1, dims=1)
+    interaction_mask = mask.roll(shifts=1, dims=1)
+    interaction_mask[:, 0] = 0
+    interaction = (interaction * interaction_mask).to(torch.int64)
+
+    # categorical
+    #  test_id, question_id, tag
+    test = ((test + 1) * mask).int()
+    question = ((question + 1) * mask).int()
+    tag = ((tag + 1) * mask).int()
+
+    # continuous
+    elapsed = (elapsed * mask).float()
+    return (correct, test, question, tag, elapsed, mask, interaction)
 
 
 # loss계산하고 parameter update!
