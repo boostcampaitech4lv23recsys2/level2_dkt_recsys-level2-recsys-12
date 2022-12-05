@@ -46,7 +46,20 @@ class Preprocess:
 
     # def __preprocessing(self, df, cate_cols, is_train=True):
     def __preprocessing(self, df, is_train=True):
-        cate_cols = ["testId", "assessmentItemID", "KnowledgeTag"]
+        cate_cols = [
+            "testId",
+            "assessmentItemID",
+            "KnowledgeTag",
+            "first3",
+            "hour_answerCode_Level",
+            "elapsedTime",
+            "dayofweek_answerCode_median",
+            "KnowledgeTag_answerCode_mean",
+            "hour_answerCode_mean",
+            "KnowledgeTag_elapsedTime_median",
+            "userID_answerCode_mean",
+            "assessmentItemID_elo_pred",
+        ]
 
         if not os.path.exists(self.args.asset_dir):
             os.makedirs(self.args.asset_dir)
@@ -72,24 +85,24 @@ class Preprocess:
             test = le.transform(df[col])
             df[col] = test
 
-        def convert_time(s):
-            timestamp = time.mktime(
-                datetime.strptime(s, "%Y-%m-%d %H:%M:%S").timetuple()
-            )
-            return int(timestamp)
+        # def convert_time(s):
+        #     timestamp = time.mktime(
+        #         datetime.strptime(s, "%Y-%m-%d %H:%M:%S").timetuple()
+        #     )
+        #     return int(timestamp)
 
-        df["Timestamp"] = df["Timestamp"].apply(convert_time)
+        # df["Timestamp"] = df["Timestamp"].apply(convert_time) # legacy 코드 비활성화
 
         return df
 
     def __feature_engineering(self, df):
-        df, cate_cols = fe.seq_feature_engineering(df)
-        return df, cate_cols
+        df = fe.seq_feature_engineering(df)
+        return df
 
     def load_data_from_file(self, file_name, is_train=True):
         csv_file_path = os.path.join(self.args.data_dir, file_name)
         df = pd.read_csv(csv_file_path)  # , nrows=100000)
-        df, cate_cols = self.__feature_engineering(df)
+        df = self.__feature_engineering(df)
         # df = self.__preprocessing(df, cate_cols, is_train)
         df = self.__preprocessing(df, is_train)
 
@@ -103,9 +116,74 @@ class Preprocess:
         self.args.n_tag = len(
             np.load(os.path.join(self.args.asset_dir, "KnowledgeTag_classes.npy"))
         )
+        self.args.n_first3 = len(
+            np.load(os.path.join(self.args.asset_dir, "first3_classes.npy"))
+        )
+        self.args.n_hour_answerCode_Level = len(
+            np.load(
+                os.path.join(self.args.asset_dir, "hour_answerCode_Level_classes.npy")
+            )
+        )
+        self.args.n_elapsedTime = len(
+            np.load(os.path.join(self.args.asset_dir, "elapsedTime_classes.npy"))
+        )
+        self.args.n_dayofweek_answerCode_median = len(
+            np.load(
+                os.path.join(
+                    self.args.asset_dir, "dayofweek_answerCode_median_classes.npy"
+                )
+            )
+        )
+        self.args.n_KnowledgeTag_answerCode_mean = len(
+            np.load(
+                os.path.join(
+                    self.args.asset_dir, "KnowledgeTag_answerCode_mean_classes.npy"
+                )
+            )
+        )
+        self.args.n_hour_answerCode_mean = len(
+            np.load(
+                os.path.join(self.args.asset_dir, "hour_answerCode_mean_classes.npy")
+            )
+        )
+        self.args.n_KnowledgeTag_elapsedTime_median = len(
+            np.load(
+                os.path.join(
+                    self.args.asset_dir, "KnowledgeTag_elapsedTime_median_classes.npy"
+                )
+            )
+        )
+        self.args.n_userID_answerCode_mean = len(
+            np.load(
+                os.path.join(self.args.asset_dir, "userID_answerCode_mean_classes.npy")
+            )
+        )
+        self.args.n_assessmentItemID_elo_pred = len(
+            np.load(
+                os.path.join(
+                    self.args.asset_dir, "assessmentItemID_elo_pred_classes.npy"
+                )
+            )
+        )
 
         df = df.sort_values(by=["userID", "Timestamp"], axis=0)  # 정렬을 위해 Timestamp가 필요
-        columns = ["userID", "answerCode", "testId", "assessmentItemID", "KnowledgeTag"]
+        columns = [
+            "userID",
+            "answerCode",
+            "testId",
+            "assessmentItemID",
+            "KnowledgeTag",
+            "first3",
+            "hour_answerCode_Level",
+            "elapsedTime",
+            "dayofweek_answerCode_median",
+            "KnowledgeTag_answerCode_mean",
+            "hour_answerCode_mean",
+            "KnowledgeTag_elapsedTime_median",
+            "userID_answerCode_mean",
+            "assessmentItemID_elo_pred",
+        ]
+
         # columns = ["answerCode"] + cate_cols
         group = (
             # df[["userID"] + columns]
@@ -117,6 +195,15 @@ class Preprocess:
                     r["testId"].values,
                     r["assessmentItemID"].values,
                     r["KnowledgeTag"].values,
+                    r["first3"].values,
+                    r["hour_answerCode_Level"].values,
+                    r["elapsedTime"].values,
+                    r["dayofweek_answerCode_median"].values,
+                    r["KnowledgeTag_answerCode_mean"].values,
+                    r["hour_answerCode_mean"].values,
+                    r["KnowledgeTag_elapsedTime_median"].values,
+                    r["userID_answerCode_mean"].values,
+                    r["assessmentItemID_elo_pred"].values,
                 )
                 # lambda r: (tuple([r[col].values for col in columns]))
             )
@@ -143,9 +230,52 @@ class DKTDataset(torch.utils.data.Dataset):
         seq_len = len(row[0])
 
         # test, question, tag, correct = row[0], row[1], row[2], row[3]
-        correct, test, question, tag = row[0], row[1], row[2], row[3]
+        (
+            correct,
+            test,
+            question,
+            tag,
+            first3,
+            hour_answerCode_Level,
+            elapsedTime,
+            dayofweek_answerCode_median,
+            KnowledgeTag_answerCode_mean,
+            hour_answerCode_mean,
+            KnowledgeTag_elapsedTime_median,
+            userID_answerCode_mean,
+            assessmentItemID_elo_pred,
+        ) = (
+            row[0],
+            row[1],
+            row[2],
+            row[3],
+            row[4],
+            row[5],
+            row[6],
+            row[7],
+            row[8],
+            row[9],
+            row[10],
+            row[11],
+            row[12],
+        )
 
-        cate_cols = [correct, test, question, tag]
+        cate_cols = [
+            correct,
+            test,
+            question,
+            tag,
+            first3,
+            hour_answerCode_Level,
+            elapsedTime,
+            dayofweek_answerCode_median,
+            KnowledgeTag_answerCode_mean,
+            hour_answerCode_mean,
+            KnowledgeTag_elapsedTime_median,
+            userID_answerCode_mean,
+            assessmentItemID_elo_pred,
+        ]
+
         # cate_cols = [correct, test, question, tag]
 
         # cate_cols = list(row)
