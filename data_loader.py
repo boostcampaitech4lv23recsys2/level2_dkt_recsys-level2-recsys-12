@@ -251,7 +251,7 @@ class DataLoader:
         self.preprocessed_df = fe.feature_engineering(data)
 
 class TabnetDataLoader(DataLoader):
-    def __init__(self, IS_CUSTOM=True, test_size=0.2, USE_VALID=True, DROPS=[], path="../data"):
+    def __init__(self, IS_CUSTOM=True, test_size=0.2, USE_VALID=True, DROPS=[], path="../data", binning=True):
         super().__init__(IS_CUSTOM=True, path=path)
         self.test_size = test_size
         self.X_train = None
@@ -267,9 +267,11 @@ class TabnetDataLoader(DataLoader):
 
         self.train_df.drop(DROPS, axis=1, inplace=True)
         self.test_df.drop(DROPS, axis=1, inplace=True)
-        self.X_test = self.test_df.drop("answerCode")
+        self.X_test = self.test_df.drop("answerCode",axis=1)
         self.y_test = self.test_df.answerCode if IS_CUSTOM else None
-
+        if binning:
+            self.labeling()
+        
         self.train_valid_split(self.test_size)
 
     @show_process
@@ -282,7 +284,6 @@ class TabnetDataLoader(DataLoader):
         cluster.fit(minmax_scaled_train)
         self.train_df["tag_first3_cluster"] = cluster.predict(minmax_scaled_train)
         self.test_df["tag_first3_cluster"] = cluster.predict(minmax_scaled_test)
-        self.labeling()
 
     # @show_process
     def binning(self, col, n_bins):
@@ -302,8 +303,8 @@ class TabnetDataLoader(DataLoader):
     def labeling(self):
         for col in self.train_df.columns:
             if col.split("_")[-1] in ("mean", "count", "var", "median"):
-                n_bin = self.train_df[col].nunique()//50
-                if n_bin > 3:
+                n_bin = self.train_df[col].nunique()//20
+                if n_bin > 4:
                     self.binning(col, n_bin)
                 else:
                     self.label_encoding(col)
