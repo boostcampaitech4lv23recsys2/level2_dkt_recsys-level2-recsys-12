@@ -56,8 +56,26 @@ class LSTM(nn.Module):
         # input[3]: correct, input[-1]: interaction, input[-2]: mask
 
         # test, question, tag, _, mask, interaction = input
-        _, test, question, tag, mask, interaction = input
         # _, test, question, tag, mask, interaction = input
+        # _, test, question, tag, mask, interaction = input
+
+        (
+            _,
+            test,
+            question,
+            tag,
+            first3,
+            hour_answerCode_Level,
+            elapsedTime,
+            dayofweek_answerCode_median,
+            KnowledgeTag_answerCode_mean,
+            hour_answerCode_mean,
+            KnowledgeTag_elapsedTime_median,
+            userID_answerCode_mean,
+            assessmentItemID_elo_pred,
+            mask,
+            interaction,
+        ) = input
 
         batch_size = interaction.size(0)
         # batch_size = input[-1].size(0)
@@ -114,13 +132,40 @@ class LSTMATTN(nn.Module):
             self.args.n_questions + 1, self.hidden_dim // 3
         )
         self.embedding_tag = nn.Embedding(self.args.n_tag + 1, self.hidden_dim // 3)
+        self.embedding_first3 = nn.Embedding(
+            self.args.n_first3 + 1, self.hidden_dim // 3
+        )
+        self.embedding_hour_answerCode_Level = nn.Embedding(
+            self.args.n_hour_answerCode_Level + 1, self.hidden_dim // 3
+        )
+        self.embedding_elapsedTime = nn.Embedding(
+            self.args.n_elapsedTime + 1, self.hidden_dim // 3
+        )
+        self.embedding_dayofweek_answerCode_median = nn.Embedding(
+            self.args.n_dayofweek_answerCode_median + 1, self.hidden_dim // 3
+        )
+        self.embedding_KnowledgeTag_answerCode_mean = nn.Embedding(
+            self.args.n_KnowledgeTag_answerCode_mean + 1, self.hidden_dim // 3
+        )
+        self.embedding_hour_answerCode_mean = nn.Embedding(
+            self.args.n_hour_answerCode_mean + 1, self.hidden_dim // 3
+        )
+        self.embedding_KnowledgeTag_elapsedTime_median = nn.Embedding(
+            self.args.n_KnowledgeTag_elapsedTime_median + 1, self.hidden_dim // 3
+        )
+        self.embedding_userID_answerCode_mean = nn.Embedding(
+            self.args.n_userID_answerCode_mean + 1, self.hidden_dim // 3
+        )
+        self.embedding_assessmentItemID_elo_pred = nn.Embedding(
+            self.args.n_assessmentItemID_elo_pred + 1, self.hidden_dim // 3
+        )
         # self.embedding_list = [
         #     nn.Embedding(input_size + 1, self.hidden_dim // 3, device=args.device)
         #     for input_size in self.args.embed_layer_input_size_list
         # ]
 
         # embedding combination projection
-        self.comb_proj = nn.Linear((self.hidden_dim // 3) * 4, self.hidden_dim)
+        self.comb_proj = nn.Linear((self.hidden_dim // 3) * 13, self.hidden_dim)
         # self.comb_proj = nn.Linear(
         #     (self.hidden_dim // 3) * (1 + len(self.embedding_list)), self.hidden_dim
         # )
@@ -149,7 +194,24 @@ class LSTMATTN(nn.Module):
         # input[3]: correct, input[-1]: interaction, input[-2]: mask
 
         # test, question, tag, _, mask, interaction = input
-        _, test, question, tag, mask, interaction = input
+        (
+            _,
+            test,
+            question,
+            tag,
+            first3,
+            hour_answerCode_Level,
+            elapsedTime,
+            dayofweek_answerCode_median,
+            KnowledgeTag_answerCode_mean,
+            hour_answerCode_mean,
+            KnowledgeTag_elapsedTime_median,
+            userID_answerCode_mean,
+            assessmentItemID_elo_pred,
+            mask,
+            interaction,
+        ) = input
+
         # _, test, question, tag, mask, interaction = input
 
         batch_size = interaction.size(0)
@@ -161,6 +223,31 @@ class LSTMATTN(nn.Module):
         embed_test = self.embedding_test(test)
         embed_question = self.embedding_question(question)
         embed_tag = self.embedding_tag(tag)
+        embed_first3 = self.embedding_first3(first3)
+        embed_hour_answerCode_Level = self.embedding_hour_answerCode_Level(
+            hour_answerCode_Level
+        )
+        embed_elapsedTime = self.embedding_elapsedTime(elapsedTime)
+        embed_dayofweek_answerCode_median = self.embedding_dayofweek_answerCode_median(
+            dayofweek_answerCode_median
+        )
+        embed_KnowledgeTag_answerCode_mean = (
+            self.embedding_KnowledgeTag_answerCode_mean(KnowledgeTag_answerCode_mean)
+        )
+        embed_hour_answerCode_mean = self.embedding_hour_answerCode_mean(
+            hour_answerCode_mean
+        )
+        embed_KnowledgeTag_elapsedTime_median = (
+            self.embedding_KnowledgeTag_elapsedTime_median(
+                KnowledgeTag_elapsedTime_median
+            )
+        )
+        embed_userID_answerCode_mean = self.embedding_userID_answerCode_mean(
+            userID_answerCode_mean
+        )
+        embed_assessmentItemID_elo_pred = self.embedding_assessmentItemID_elo_pred(
+            assessmentItemID_elo_pred
+        )
         # embed_list = [
         #     self.embedding_list[i](input[i + 1])
         #     for i in range(len(self.embedding_list))
@@ -171,6 +258,15 @@ class LSTMATTN(nn.Module):
                 embed_test,
                 embed_question,
                 embed_tag,
+                embed_first3,
+                embed_hour_answerCode_Level,
+                embed_elapsedTime,
+                embed_dayofweek_answerCode_median,
+                embed_KnowledgeTag_answerCode_mean,
+                embed_hour_answerCode_mean,
+                embed_KnowledgeTag_elapsedTime_median,
+                embed_userID_answerCode_mean,
+                embed_assessmentItemID_elo_pred,
                 embed_interaction,
             ],
             2,
@@ -248,8 +344,26 @@ class Bert(nn.Module):
         # input[3]: correct, input[-1]: interaction, input[-2]: mask
 
         # test, question, tag, _, mask, interaction = input
-        _, test, question, tag, mask, interaction = input
         # _, test, question, tag, mask, interaction = input
+        # _, test, question, tag, mask, interaction = input
+
+        (
+            _,
+            test,
+            question,
+            tag,
+            first3,
+            hour_answerCode_Level,
+            elapsedTime,
+            dayofweek_answerCode_median,
+            KnowledgeTag_answerCode_mean,
+            hour_answerCode_mean,
+            KnowledgeTag_elapsedTime_median,
+            userID_answerCode_mean,
+            assessmentItemID_elo_pred,
+            mask,
+            interaction,
+        ) = input
 
         batch_size = interaction.size(0)
         # batch_size = input[-1].size(0)
@@ -385,6 +499,8 @@ class LastQuery(nn.Module):
 
     def forward(self, input):
         _, test, question, tag, elapsed, mask, interaction = input
+        # _, test, question, tag, mask, interaction = input
+
         batch_size = interaction.size(0)
         seq_len = interaction.size(1)
 
