@@ -251,8 +251,8 @@ class DataLoader:
         self.preprocessed_df = fe.feature_engineering(data)
 
 class TabnetDataLoader(DataLoader):
-    def __init__(self, IS_CUSTOM=True, test_size=0.2, USE_VALID=True, DROPS=[]):
-        super().__init__(IS_CUSTOM=True)
+    def __init__(self, IS_CUSTOM=True, test_size=0.2, USE_VALID=True, DROPS=[], path="../data"):
+        super().__init__(IS_CUSTOM=True, path=path)
         self.test_size = test_size
         self.X_train = None
         self.X_valid = None
@@ -267,6 +267,8 @@ class TabnetDataLoader(DataLoader):
 
         self.train_df.drop(DROPS, axis=1, inplace=True)
         self.test_df.drop(DROPS, axis=1, inplace=True)
+        self.X_test = self.test_df.drop("answerCode")
+        self.y_test = self.test_df.answerCode if IS_CUSTOM else None
 
         self.train_valid_split(self.test_size)
 
