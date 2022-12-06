@@ -112,8 +112,7 @@ def run_kfold(args, train_data, preprocess, model):
 
         inner_model = copy.deepcopy(model)
 
-        train_data_fold, valid_data_fold = preprocess.split_data(train_data)
-        # only when using warmup scheduler
+        # train_data_fold, valid_data_fold = preprocess.split_data(train_data)
 
         # reset wandb for every fold
         if args.run_wandb:
@@ -142,6 +141,7 @@ def run_kfold(args, train_data, preprocess, model):
             valid_subsampler,
         )
 
+        # only when using warmup scheduler
         args.total_steps = int(
             math.ceil(len(train_loader.dataset) / args.batch_size)
         ) * (args.n_epochs)
@@ -386,7 +386,7 @@ def process_batch(batch):
         first3,
         hour_answerCode_Level,
         elapsedTime,
-        dayofweek_answerCode_median,
+        dayofweek_answerCode_mean,
         KnowledgeTag_answerCode_mean,
         hour_answerCode_mean,
         KnowledgeTag_elapsedTime_median,
@@ -414,15 +414,15 @@ def process_batch(batch):
     # 여기서부터 lstmattn model에서 사용하는 feature
     first3 = ((first3 + 1) * mask).int()
     hour_answerCode_Level = ((hour_answerCode_Level + 1) * mask).int()
-    elapsedTime = ((elapsedTime + 1) * mask).int()
-    dayofweek_answerCode_median = ((dayofweek_answerCode_median + 1) * mask).int()
-    KnowledgeTag_answerCode_mean = ((KnowledgeTag_answerCode_mean + 1) * mask).int()
-    hour_answerCode_mean = ((hour_answerCode_mean + 1) * mask).int()
+    elapsedTime = ((elapsedTime + 1) * mask).float()
+    dayofweek_answerCode_mean = ((dayofweek_answerCode_mean + 1) * mask).float()
+    KnowledgeTag_answerCode_mean = ((KnowledgeTag_answerCode_mean + 1) * mask).float()
+    hour_answerCode_mean = ((hour_answerCode_mean + 1) * mask).float()
     KnowledgeTag_elapsedTime_median = (
         (KnowledgeTag_elapsedTime_median + 1) * mask
-    ).int()
-    userID_answerCode_mean = ((userID_answerCode_mean + 1) * mask).int()
-    assessmentItemID_elo_pred = ((assessmentItemID_elo_pred + 1) * mask).int()
+    ).float()
+    userID_answerCode_mean = ((userID_answerCode_mean + 1) * mask).float()
+    assessmentItemID_elo_pred = ((assessmentItemID_elo_pred + 1) * mask).float()
 
     return (
         correct,
@@ -432,7 +432,7 @@ def process_batch(batch):
         first3,
         hour_answerCode_Level,
         elapsedTime,
-        dayofweek_answerCode_median,
+        dayofweek_answerCode_mean,
         KnowledgeTag_answerCode_mean,
         hour_answerCode_mean,
         KnowledgeTag_elapsedTime_median,
