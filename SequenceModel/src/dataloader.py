@@ -56,15 +56,8 @@ class Preprocess:
                 "testId",
                 "assessmentItemID",
                 "KnowledgeTag",
-                "first3",  # 여기서부터 lstmattn model에서 사용하는 feature
-                "hour_answerCode_Level",
-                "elapsedTime",
-                "dayofweek_answerCode_median",
-                "KnowledgeTag_answerCode_mean",
-                "hour_answerCode_mean",
-                "KnowledgeTag_elapsedTime_median",
-                "userID_answerCode_mean",
-                "assessmentItemID_elo_pred",
+                "first3",
+                "hour_answerCode_Level"
             ]
 
         if not os.path.exists(self.args.asset_dir):
@@ -102,13 +95,30 @@ class Preprocess:
         return df
 
     def __feature_engineering(self, df):
+        if self.args.model == "lastquery":
+            return df
+        else:
+            # 범주형으로 처리할 때, 감당 가능한 시간 내의 encoding을 지원하기 위해 소수점 4자리에서 자름
+            df["assessmentItemID_elo_pred"] = round(df["assessmentItemID_elo_pred"], 4)
+            # 연속형 변수들의 정규화
+            df["elapsedTime"] = (df["elapsedTime"] - df["elapsedTime"].mean()) / df["elapsedTime"].std()
+            df["dayofweek_answerCode_mean"] = (df["dayofweek_answerCode_mean"] - df["dayofweek_answerCode_mean"].mean()) / df["dayofweek_answerCode_mean"].std()
+            df["KnowledgeTag_answerCode_mean"] = (df["KnowledgeTag_answerCode_mean"] - df["KnowledgeTag_answerCode_mean"].mean()) / df["KnowledgeTag_answerCode_mean"].std()
+            df["hour_answerCode_mean"] = (df["hour_answerCode_mean"] - df["hour_answerCode_mean"].mean()) / df["hour_answerCode_mean"].std()
+            df["KnowledgeTag_elapsedTime_median"] = (df["KnowledgeTag_elapsedTime_median"] - df["KnowledgeTag_elapsedTime_median"].mean()) / df["KnowledgeTag_elapsedTime_median"].std()
+            df["userID_answerCode_mean"] = (df["userID_answerCode_mean"] - df["userID_answerCode_mean"].mean()) / df["userID_answerCode_mean"].std()
+            df["assessmentItemID_elo_pred"] = (df["assessmentItemID_elo_pred"] - df["assessmentItemID_elo_pred"].mean()) / df["assessmentItemID_elo_pred"].std()
+            
         return df
 
     def load_data_from_file(self, file_name, is_train=True):
         csv_file_path = os.path.join(self.args.data_dir, file_name)
         df = pd.read_csv(csv_file_path)  # , nrows=100000)
 
-        # df = self.__feature_engineering(df) # featured_train_data.csv 사용으로 대체
+        if self.args.model == "lastquery":
+            pass
+        else:
+            df = self.__feature_engineering(df)  # featured_train_data.csv 사용으로 대체
 
         df = self.__preprocessing(df, is_train)
 
@@ -130,47 +140,8 @@ class Preprocess:
             )
             self.args.n_hour_answerCode_Level = len(
                 np.load(
-                    os.path.join(self.args.asset_dir, "hour_answerCode_Level_classes.npy")
-                )
-            )
-            self.args.n_elapsedTime = len(
-                np.load(os.path.join(self.args.asset_dir, "elapsedTime_classes.npy"))
-            )
-            self.args.n_dayofweek_answerCode_median = len(
-                np.load(
                     os.path.join(
-                        self.args.asset_dir, "dayofweek_answerCode_median_classes.npy"
-                    )
-                )
-            )
-            self.args.n_KnowledgeTag_answerCode_mean = len(
-                np.load(
-                    os.path.join(
-                        self.args.asset_dir, "KnowledgeTag_answerCode_mean_classes.npy"
-                    )
-                )
-            )
-            self.args.n_hour_answerCode_mean = len(
-                np.load(
-                    os.path.join(self.args.asset_dir, "hour_answerCode_mean_classes.npy")
-                )
-            )
-            self.args.n_KnowledgeTag_elapsedTime_median = len(
-                np.load(
-                    os.path.join(
-                        self.args.asset_dir, "KnowledgeTag_elapsedTime_median_classes.npy"
-                    )
-                )
-            )
-            self.args.n_userID_answerCode_mean = len(
-                np.load(
-                    os.path.join(self.args.asset_dir, "userID_answerCode_mean_classes.npy")
-                )
-            )
-            self.args.n_assessmentItemID_elo_pred = len(
-                np.load(
-                    os.path.join(
-                        self.args.asset_dir, "assessmentItemID_elo_pred_classes.npy"
+                        self.args.asset_dir, "hour_answerCode_Level_classes.npy"
                     )
                 )
             )
@@ -193,10 +164,10 @@ class Preprocess:
                 "testId",
                 "assessmentItemID",
                 "KnowledgeTag",
-                "first3",  # 여기서부터 lstmattn model에서 사용하는 feature
+                "first3",
                 "hour_answerCode_Level",
                 "elapsedTime",
-                "dayofweek_answerCode_median",
+                "dayofweek_answerCode_mean",
                 "KnowledgeTag_answerCode_mean",
                 "hour_answerCode_mean",
                 "KnowledgeTag_elapsedTime_median",
@@ -229,10 +200,10 @@ class Preprocess:
                         r["testId"].values,
                         r["assessmentItemID"].values,
                         r["KnowledgeTag"].values,
-                        r["first3"].values,  # 여기서부터 lstmattn model에서 사용하는 feature
+                        r["first3"].values,
                         r["hour_answerCode_Level"].values,
                         r["elapsedTime"].values,
-                        r["dayofweek_answerCode_median"].values,
+                        r["dayofweek_answerCode_mean"].values,
                         r["KnowledgeTag_answerCode_mean"].values,
                         r["hour_answerCode_mean"].values,
                         r["KnowledgeTag_elapsedTime_median"].values,
@@ -265,55 +236,11 @@ class DKTDataset(torch.utils.data.Dataset):
         if self.args.model == "lastquery":
             # correct, test, question, tag = row[0], row[1], row[2], row[3]
             # elapsed = row[4]
+            
             conti_idx = [4, 5]  # continous feature 인덱스
+
         else:
-            (
-                correct,
-                test,
-                question,
-                tag,
-                first3,  # 여기서부터 lstmattn model에서 사용하는 feature
-                hour_answerCode_Level,
-                elapsedTime,
-                dayofweek_answerCode_median,
-                KnowledgeTag_answerCode_mean,
-                hour_answerCode_mean,
-                KnowledgeTag_elapsedTime_median,
-                userID_answerCode_mean,
-                assessmentItemID_elo_pred,
-            ) = (
-                row[0],
-                row[1],
-                row[2],
-                row[3],
-                row[4],  # 여기서부터 lstmattn model에서 사용하는 feature
-                row[5],
-                row[6],
-                row[7],
-                row[8],
-                row[9],
-                row[10],
-                row[11],
-                row[12],
-            )
-
-            cate_cols = [
-                correct,
-                test,
-                question,
-                tag,
-                first3,  # 여기서부터 lstmattn model에서 사용하는 feature
-                hour_answerCode_Level,
-                elapsedTime,
-                dayofweek_answerCode_median,
-                KnowledgeTag_answerCode_mean,
-                hour_answerCode_mean,
-                KnowledgeTag_elapsedTime_median,
-                userID_answerCode_mean,
-                assessmentItemID_elo_pred,
-            ]
-
-            conti_idx = []  # 연속형 피처 인덱스 추가
+            conti_idx = [6, 7, 8, 9, 10, 11, 12]  # continuous feature 인덱스
 
         # cate_cols = [correct, test, question, tag]
         feat_cols = list(row)  # cate + conti
