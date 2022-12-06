@@ -49,7 +49,7 @@ class LSTM(nn.Module):
             first3,
             hour_answerCode_Level,
             elapsedTime,
-            dayofweek_answerCode_median,
+            dayofweek_answerCode_mean,
             KnowledgeTag_answerCode_mean,
             hour_answerCode_mean,
             KnowledgeTag_elapsedTime_median,
@@ -96,7 +96,7 @@ class LSTMATTN(nn.Module):
         self.drop_out = self.args.drop_out
         self.lstmattn_bert_n_hidden_layer = self.args.lstmattn_bert_n_hidden_layer
 
-        # Embedding
+        # Category features embedding
         # interaction은 현재 correct로 구성되어있다. correct(1, 2) + padding(0)
         self.embedding_interaction = nn.Embedding(3, self.hidden_dim // 3)
         self.embedding_test = nn.Embedding(self.args.n_test + 1, self.hidden_dim // 3)
@@ -110,30 +110,13 @@ class LSTMATTN(nn.Module):
         self.embedding_hour_answerCode_Level = nn.Embedding(
             self.args.n_hour_answerCode_Level + 1, self.hidden_dim // 3
         )
-        self.embedding_elapsedTime = nn.Embedding(
-            self.args.n_elapsedTime + 1, self.hidden_dim // 3
-        )
-        self.embedding_dayofweek_answerCode_median = nn.Embedding(
-            self.args.n_dayofweek_answerCode_median + 1, self.hidden_dim // 3
-        )
-        self.embedding_KnowledgeTag_answerCode_mean = nn.Embedding(
-            self.args.n_KnowledgeTag_answerCode_mean + 1, self.hidden_dim // 3
-        )
-        self.embedding_hour_answerCode_mean = nn.Embedding(
-            self.args.n_hour_answerCode_mean + 1, self.hidden_dim // 3
-        )
-        self.embedding_KnowledgeTag_elapsedTime_median = nn.Embedding(
-            self.args.n_KnowledgeTag_elapsedTime_median + 1, self.hidden_dim // 3
-        )
-        self.embedding_userID_answerCode_mean = nn.Embedding(
-            self.args.n_userID_answerCode_mean + 1, self.hidden_dim // 3
-        )
-        self.embedding_assessmentItemID_elo_pred = nn.Embedding(
-            self.args.n_assessmentItemID_elo_pred + 1, self.hidden_dim // 3
-        )
-
+        
         # embedding combination projection
-        self.comb_proj = nn.Linear((self.hidden_dim // 3) * 13, self.hidden_dim)
+        self.comb_proj_cont = nn.Linear(
+            7, self.hidden_dim
+        )
+        self.comb_proj_cate = nn.Linear((self.hidden_dim // 3) * 6, self.hidden_dim)
+        self.comb_proj = nn.Linear(self.hidden_dim * 2, self.hidden_dim)      
 
         self.lstm = nn.LSTM(
             self.hidden_dim, self.hidden_dim, self.n_layers, batch_first=True
@@ -165,7 +148,7 @@ class LSTMATTN(nn.Module):
             first3,
             hour_answerCode_Level,
             elapsedTime,
-            dayofweek_answerCode_median,
+            dayofweek_answerCode_mean,
             KnowledgeTag_answerCode_mean,
             hour_answerCode_mean,
             KnowledgeTag_elapsedTime_median,
@@ -177,7 +160,7 @@ class LSTMATTN(nn.Module):
 
         batch_size = interaction.size(0)
 
-        # Embedding
+        # Category features Embedding
         embed_interaction = self.embedding_interaction(interaction)
         embed_test = self.embedding_test(test)
         embed_question = self.embedding_question(question)
@@ -186,47 +169,31 @@ class LSTMATTN(nn.Module):
         embed_hour_answerCode_Level = self.embedding_hour_answerCode_Level(
             hour_answerCode_Level
         )
-        embed_elapsedTime = self.embedding_elapsedTime(elapsedTime)
-        embed_dayofweek_answerCode_median = self.embedding_dayofweek_answerCode_median(
-            dayofweek_answerCode_median
-        )
-        embed_KnowledgeTag_answerCode_mean = (
-            self.embedding_KnowledgeTag_answerCode_mean(KnowledgeTag_answerCode_mean)
-        )
-        embed_hour_answerCode_mean = self.embedding_hour_answerCode_mean(
-            hour_answerCode_mean
-        )
-        embed_KnowledgeTag_elapsedTime_median = (
-            self.embedding_KnowledgeTag_elapsedTime_median(
-                KnowledgeTag_elapsedTime_median
-            )
-        )
-        embed_userID_answerCode_mean = self.embedding_userID_answerCode_mean(
-            userID_answerCode_mean
-        )
-        embed_assessmentItemID_elo_pred = self.embedding_assessmentItemID_elo_pred(
-            assessmentItemID_elo_pred
-        )
-
-        embed = torch.cat(
+        embed_cate = torch.cat(
             [
                 embed_test,
                 embed_question,
                 embed_tag,
                 embed_first3,
                 embed_hour_answerCode_Level,
-                embed_elapsedTime,
-                embed_dayofweek_answerCode_median,
-                embed_KnowledgeTag_answerCode_mean,
-                embed_hour_answerCode_mean,
-                embed_KnowledgeTag_elapsedTime_median,
-                embed_userID_answerCode_mean,
-                embed_assessmentItemID_elo_pred,
                 embed_interaction,
             ],
             2,
         )
+        embed_cate = self.comb_proj_cate(embed_cate)
+        
+        # Continuous features
+        conti = torch.stack([elapsedTime,
+            dayofweek_answerCode_mean,
+            KnowledgeTag_answerCode_mean,
+            hour_answerCode_mean,
+            KnowledgeTag_elapsedTime_median,
+            userID_answerCode_mean,
+            assessmentItemID_elo_pred], 2)
+        conti_layer = self.comb_proj_cont(conti)
 
+        # embedding input features (cate + cont)
+        embed = torch.cat([embed_cate, conti_layer], 2)
         X = self.comb_proj(embed)
 
         out, _ = self.lstm(X)
@@ -293,7 +260,7 @@ class Bert(nn.Module):
             first3,
             hour_answerCode_Level,
             elapsedTime,
-            dayofweek_answerCode_median,
+            dayofweek_answerCode_mean,
             KnowledgeTag_answerCode_mean,
             hour_answerCode_mean,
             KnowledgeTag_elapsedTime_median,
