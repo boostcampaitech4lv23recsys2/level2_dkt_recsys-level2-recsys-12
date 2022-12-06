@@ -102,18 +102,12 @@ class Preprocess:
         return df
 
     def __feature_engineering(self, df):
-        if self.args.model == "lastquery":
-            df = fe.lq_feature_engineering(df)
-            return df
-        # df = fe.seq_feature_engineering(df) # featured_train_data.csv 사용으로 대체
         return df
 
     def load_data_from_file(self, file_name, is_train=True):
         csv_file_path = os.path.join(self.args.data_dir, file_name)
         df = pd.read_csv(csv_file_path)  # , nrows=100000)
 
-        if self.args.model == "lastquery":
-            df = self.__feature_engineering(df)
         # df = self.__feature_engineering(df) # featured_train_data.csv 사용으로 대체
 
         df = self.__preprocessing(df, is_train)
@@ -190,6 +184,7 @@ class Preprocess:
                 "assessmentItemID",
                 "KnowledgeTag",
                 "elapsedTime",
+                "assessmentItemID_elo_pred",
             ]
         else:
             columns = [
@@ -220,6 +215,7 @@ class Preprocess:
                         r["assessmentItemID"].values,
                         r["KnowledgeTag"].values,
                         r["elapsedTime"].values,
+                        r["assessmentItemID_elo_pred"].values,
                     )
                 )
             )
@@ -269,7 +265,7 @@ class DKTDataset(torch.utils.data.Dataset):
         if self.args.model == "lastquery":
             # correct, test, question, tag = row[0], row[1], row[2], row[3]
             # elapsed = row[4]
-            conti_idx = [4]  # continous feature 인덱스
+            conti_idx = [4, 5]  # continous feature 인덱스
         else:
             (
                 correct,
