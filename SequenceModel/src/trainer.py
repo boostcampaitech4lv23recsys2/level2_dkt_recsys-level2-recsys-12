@@ -447,7 +447,7 @@ def process_batch(batch):
 def process_batch_lq(batch):
 
     # test, question, tag, correct, mask = batch
-    correct, test, question, tag, elapsed, mask = batch
+    correct, test, question, tag, elapsed, elo, mask = batch
     # correct, test, question, tag, mask = batch # batch = [correct, ...features..., mask]
 
     # change to float
@@ -469,7 +469,8 @@ def process_batch_lq(batch):
 
     # continuous
     elapsed = (elapsed * mask).float()
-    return (correct, test, question, tag, elapsed, mask, interaction)
+    elo = (elo * mask).float()
+    return (correct, test, question, tag, elapsed, elo, mask, interaction)
 
 
 # loss계산하고 parameter update!
