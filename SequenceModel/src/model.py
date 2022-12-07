@@ -117,6 +117,8 @@ class LSTMATTN(nn.Module):
         )
         self.comb_proj_cate = nn.Linear((self.hidden_dim // 3) * 6, self.hidden_dim)
         self.comb_proj = nn.Linear(self.hidden_dim * 2, self.hidden_dim)      
+        
+        self.norm = nn.BatchNorm1d(self.args.max_seq_len)
 
         self.lstm = nn.LSTM(
             self.hidden_dim, self.hidden_dim, self.n_layers, batch_first=True
@@ -191,9 +193,10 @@ class LSTMATTN(nn.Module):
             userID_answerCode_mean,
             assessmentItemID_elo_pred], 2)
         conti_layer = self.comb_proj_cont(conti)
-
+        norm_conti_layer = self.norm(conti_layer)
+        
         # embedding input features (cate + cont)
-        embed = torch.cat([embed_cate, conti_layer], 2)
+        embed = torch.cat([embed_cate, norm_conti_layer], 2)
         X = self.comb_proj(embed)
 
         out, _ = self.lstm(X)
