@@ -84,42 +84,17 @@ class Preprocess:
             test = le.transform(df[col])
             df[col] = test
 
-        # def convert_time(s):
-        #     timestamp = time.mktime(
-        #         datetime.strptime(s, "%Y-%m-%d %H:%M:%S").timetuple()
-        #     )
-        #     return int(timestamp)
-
-        # df["Timestamp"] = df["Timestamp"].apply(convert_time) # legacy 코드 비활성화
-
         return df
 
     def __feature_engineering(self, df):
-        if self.args.model == "lastquery":
-            df = fe.lq_feature_engineering(df)
-            return df
-        else:
-            # 범주형으로 처리할 때, 감당 가능한 시간 내의 encoding을 지원하기 위해 소수점 4자리에서 자름
-            df["assessmentItemID_elo_pred"] = round(df["assessmentItemID_elo_pred"], 4)
-            # 연속형 변수들의 정규화
-            df["elapsedTime"] = (df["elapsedTime"] - df["elapsedTime"].mean()) / df["elapsedTime"].std()
-            df["dayofweek_answerCode_mean"] = (df["dayofweek_answerCode_mean"] - df["dayofweek_answerCode_mean"].mean()) / df["dayofweek_answerCode_mean"].std()
-            df["KnowledgeTag_answerCode_mean"] = (df["KnowledgeTag_answerCode_mean"] - df["KnowledgeTag_answerCode_mean"].mean()) / df["KnowledgeTag_answerCode_mean"].std()
-            df["hour_answerCode_mean"] = (df["hour_answerCode_mean"] - df["hour_answerCode_mean"].mean()) / df["hour_answerCode_mean"].std()
-            df["KnowledgeTag_elapsedTime_median"] = (df["KnowledgeTag_elapsedTime_median"] - df["KnowledgeTag_elapsedTime_median"].mean()) / df["KnowledgeTag_elapsedTime_median"].std()
-            df["userID_answerCode_mean"] = (df["userID_answerCode_mean"] - df["userID_answerCode_mean"].mean()) / df["userID_answerCode_mean"].std()
-            df["assessmentItemID_elo_pred"] = (df["assessmentItemID_elo_pred"] - df["assessmentItemID_elo_pred"].mean()) / df["assessmentItemID_elo_pred"].std()
-            
+        pass
         return df
 
     def load_data_from_file(self, file_name, is_train=True):
         csv_file_path = os.path.join(self.args.data_dir, file_name)
         df = pd.read_csv(csv_file_path)  # , nrows=100000)
 
-        if self.args.model == "lastquery":
-            df = self.__feature_engineering(df)
-        else:
-            df = self.__feature_engineering(df)  # featured_train_data.csv 사용으로 대체
+        # df = self.__feature_engineering(df)  # featured_train_data.csv 사용으로 대체
         df = self.__preprocessing(df, is_train)
 
         # 추후 feature를 embedding할 시에 embedding_layer의 input 크기를 결정할때 사용
