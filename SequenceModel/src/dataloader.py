@@ -86,15 +86,15 @@ class Preprocess:
 
         return df
 
-    def __feature_engineering(self, df):=
-        pass=
+    def __feature_engineering(self, df):
+        pass
         return df
 
     def load_data_from_file(self, file_name, is_train=True):
         csv_file_path = os.path.join(self.args.data_dir, file_name)
         df = pd.read_csv(csv_file_path)  # , nrows=100000)
 
-        # df = self.__feature_engineering(df)  # featured_train_data.csv 사용으로 대체=
+        # df = self.__feature_engineering(df)  # featured_train_data.csv 사용으로 대체
         df = self.__preprocessing(df, is_train)
 
         # 추후 feature를 embedding할 시에 embedding_layer의 input 크기를 결정할때 사용
