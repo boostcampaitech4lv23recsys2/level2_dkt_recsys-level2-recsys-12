@@ -435,6 +435,7 @@ def seq_feature_engineering(df):
 # ADD FUNCTIONS YOU WANT TO APPLY
 LQ_ADD_LIST = [
     get_elapsed_time,
+    get_elo_based_ratings,
 ]
 # ADD COLUMNS YOU WANT TO DROP
 LQ_DROP_LIST = []

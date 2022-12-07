@@ -86,15 +86,15 @@ class Preprocess:
 
         return df
 
-    def __feature_engineering(self, df):
-        pass
+    def __feature_engineering(self, df):=
+        pass=
         return df
 
     def load_data_from_file(self, file_name, is_train=True):
         csv_file_path = os.path.join(self.args.data_dir, file_name)
         df = pd.read_csv(csv_file_path)  # , nrows=100000)
 
-        # df = self.__feature_engineering(df)  # featured_train_data.csv 사용으로 대체
+        # df = self.__feature_engineering(df)  # featured_train_data.csv 사용으로 대체=
         df = self.__preprocessing(df, is_train)
 
         # 추후 feature를 embedding할 시에 embedding_layer의 input 크기를 결정할때 사용
@@ -130,6 +130,7 @@ class Preprocess:
                 "assessmentItemID",
                 "KnowledgeTag",
                 "elapsedTime",
+                "assessmentItemID_elo_pred",
             ]
         else:
             columns = [
@@ -160,6 +161,7 @@ class Preprocess:
                         r["assessmentItemID"].values,
                         r["KnowledgeTag"].values,
                         r["elapsedTime"].values,
+                        r["assessmentItemID_elo_pred"].values,
                     )
                 )
             )
@@ -209,7 +211,9 @@ class DKTDataset(torch.utils.data.Dataset):
         if self.args.model == "lastquery":
             # correct, test, question, tag = row[0], row[1], row[2], row[3]
             # elapsed = row[4]
-            conti_idx = [4]  # continuous feature 인덱스
+            
+            conti_idx = [4, 5]  # continous feature 인덱스
+
         else:
             conti_idx = [6, 7, 8, 9, 10, 11, 12]  # continuous feature 인덱스
 
