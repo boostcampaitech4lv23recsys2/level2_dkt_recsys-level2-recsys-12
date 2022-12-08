@@ -1,13 +1,14 @@
 import argparse
 import time
 from typing import Optional, Union
-from torch import Tensor
 
 from args import parse_args
+from torch import Tensor
+
 
 class CFG:
     args, wandb_kwargs = parse_args()
-    
+
     use_cuda_if_available = True
     user_wandb = False
     wandb_kwargs = wandb_kwargs
@@ -24,7 +25,7 @@ class CFG:
 
     # build
     embedding_dim = args.embedding_dim  # int
-    num_layers = args.num_layers # int
+    num_layers = args.num_layers  # int
     alpha = args.alpha  # Optional[Union[float, Tensor]]
     build_kwargs = args.build_kwargs
     weight = args.weight

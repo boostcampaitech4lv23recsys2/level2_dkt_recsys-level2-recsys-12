@@ -57,7 +57,6 @@ def run(args, train_data, valid_data, model, gradient=False):
         ### VALID
         auc, acc = validate(valid_loader, model, args)
 
-        ### TODO: model save or early stopping
         if args.run_wandb:
             wandb.log(
                 {
@@ -112,8 +111,6 @@ def run_kfold(args, train_data, preprocess, model):
 
         inner_model = copy.deepcopy(model)
 
-        # train_data_fold, valid_data_fold = preprocess.split_data(train_data)
-
         # reset wandb for every fold
         if args.run_wandb:
             wandb.init(
@@ -164,7 +161,6 @@ def run_kfold(args, train_data, preprocess, model):
             ### VALID
             auc, acc = validate(valid_loader, inner_model, args)
 
-            ### TODO: model save or early stopping
             if args.run_wandb:
                 wandb.log(
                     {
@@ -446,9 +442,7 @@ def process_batch(batch):
 # 배치 전처리 for lastquery
 def process_batch_lq(batch):
 
-    # test, question, tag, correct, mask = batch
     correct, test, question, tag, elapsed, elo, mask = batch
-    # correct, test, question, tag, mask = batch # batch = [correct, ...features..., mask]
 
     # change to float
     mask = mask.float()

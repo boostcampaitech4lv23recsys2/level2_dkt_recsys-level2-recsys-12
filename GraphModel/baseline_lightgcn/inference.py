@@ -3,7 +3,6 @@ import os
 import pandas as pd
 import torch
 from config import CFG, logging_conf
-
 from lightgcn.datasets import prepare_dataset
 from lightgcn.models import build, inference
 from lightgcn.utils import get_logger
@@ -35,7 +34,7 @@ def main():
         alpha=CFG.alpha,
         weight=CFG.weight,
         logger=logger.getChild("build"),
-        **CFG.build_kwargs
+        **CFG.build_kwargs,
     )
     model.to(device)
     logger.info("[2/4] Model Building - Done")
@@ -53,9 +52,11 @@ def main():
 
     logger.info("Task Complete")
     logger.info("Test 성능 측정")
-    auc, acc = check_accuracy(PRED_PATH = os.path.join(CFG.output_dir, CFG.pred_file))
+    auc, acc = check_accuracy(PRED_PATH=os.path.join(CFG.output_dir, CFG.pred_file))
     logger.info(f"Test performance: auc : {auc} \t\t acc : {acc}")
-    logger.info(f"n_epoch: {CFG.n_epoch}, \t feature_weight: [ ], \t learning_rate: {CFG.learning_rate}, \t using_features: [ ]")
+    logger.info(
+        f"n_epoch: {CFG.n_epoch}, \t feature_weight: [ ], \t learning_rate: {CFG.learning_rate}, \t using_features: [ ]"
+    )
     if CFG.edge_dropout:
         logger.info(f"edge_dropout_rate: {CFG.edge_dropout_rate}")
     else:

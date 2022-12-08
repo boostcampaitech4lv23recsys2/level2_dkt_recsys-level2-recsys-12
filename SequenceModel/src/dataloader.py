@@ -57,7 +57,7 @@ class Preprocess:
                 "assessmentItemID",
                 "KnowledgeTag",
                 "first3",
-                "hour_answerCode_Level"
+                "hour_answerCode_Level",
             ]
 
         if not os.path.exists(self.args.asset_dir):
@@ -209,18 +209,12 @@ class DKTDataset(torch.utils.data.Dataset):
         seq_len = len(row[0])
 
         if self.args.model == "lastquery":
-            # correct, test, question, tag = row[0], row[1], row[2], row[3]
-            # elapsed = row[4]
-            
             conti_idx = [4, 5]  # continous feature 인덱스
 
         else:
             conti_idx = [6, 7, 8, 9, 10, 11, 12]  # continuous feature 인덱스
 
-        # cate_cols = [correct, test, question, tag]
         feat_cols = list(row)  # cate + conti
-
-        # cate_cols = list(row)
 
         # max seq len을 고려하여서 이보다 길면 자르고 아닐 경우 그대로 냅둔다
         if seq_len > self.args.max_seq_len:
@@ -232,7 +226,6 @@ class DKTDataset(torch.utils.data.Dataset):
             mask[-seq_len:] = 1
 
         # mask도 columns 목록에 포함시킴
-        # cate_cols.append(mask)
         feat_cols.append(mask)
 
         # np.array -> torch.tensor 형변환

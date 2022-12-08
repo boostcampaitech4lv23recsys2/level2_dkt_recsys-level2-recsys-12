@@ -6,15 +6,15 @@
 # In[1]:
 
 
-import pandas as pd
 import os
 import random
+import warnings
 
+import pandas as pd
 
 # In[2]:
 
 
-import warnings
 
 warnings.filterwarnings("ignore")
 
@@ -127,10 +127,8 @@ test = test.drop(["answerCode"], axis=1)
 
 
 import lightgbm as lgb
-from sklearn.metrics import roc_auc_score
-from sklearn.metrics import accuracy_score
 import numpy as np
-
+from sklearn.metrics import accuracy_score, roc_auc_score
 
 # In[9]:
 
@@ -287,7 +285,3 @@ with open(write_path, "w", encoding="utf8") as w:
 
 
 # In[ ]:
-
-
-
-
