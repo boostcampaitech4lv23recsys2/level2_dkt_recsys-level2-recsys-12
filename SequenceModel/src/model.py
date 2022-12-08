@@ -330,10 +330,16 @@ class LastQuery(nn.Module):
             self.args.n_questions + 1, self.hidden_dim // 3
         )
         self.embedding_tag = nn.Embedding(self.args.n_tag + 1, self.hidden_dim // 3)
+        self.embedding_first3 = nn.Embedding(
+            self.args.n_first3 + 1, self.hidden_dim // 3
+        )
+        self.embedding_hour_answerCode_Level = nn.Embedding(
+            self.args.n_hour_answerCode_Level + 1, self.hidden_dim // 3
+        )
         self.embedding_position = nn.Embedding(self.args.max_seq_len, self.hidden_dim)
 
         self.conti_layer = nn.Linear(
-            2, self.hidden_dim  # number of continous feature
+            6, self.hidden_dim  # number of continous feature
         )
 
         # embedding combination projection
@@ -389,8 +395,25 @@ class LastQuery(nn.Module):
         return (h, c)
 
     def forward(self, input):
-        _, test, question, tag, elapsed, elo, mask, interaction = input
+        # _, test, question, tag, elapsed, elo, mask, interaction = input
         # _, test, question, tag, mask, interaction = input
+        (
+            _,
+            test,
+            question,
+            tag,
+            first3,
+            hour_answerCode_Level,
+            elapsedTime,
+            dayofweek_answerCode_mean,
+            KnowledgeTag_answerCode_mean,
+            hour_answerCode_mean,
+            KnowledgeTag_elapsedTime_median,
+            userID_answerCode_mean,
+            assessmentItemID_elo_pred,
+            mask,
+            interaction,
+        ) = input
 
         batch_size = interaction.size(0)
         seq_len = interaction.size(1)
@@ -403,16 +426,24 @@ class LastQuery(nn.Module):
 
         embed_cate = torch.cat(
             [
-                embed_interaction,
                 embed_test,
                 embed_question,
                 embed_tag,
+                embed_interaction,
             ],
             2,
         )
 
         embed_cate = self.comb_proj_cate(embed_cate)
-        conti = torch.stack([elapsed, elo], 2)
+
+        conti = torch.stack([elapsedTime,
+            # dayofweek_answerCode_mean,
+            KnowledgeTag_answerCode_mean,
+            hour_answerCode_mean,
+            KnowledgeTag_elapsedTime_median,
+            userID_answerCode_mean,
+            assessmentItemID_elo_pred], 2)
+
         conti_layer = self.conti_layer(conti)
 
         embed = torch.cat([embed_cate, conti_layer], 2)

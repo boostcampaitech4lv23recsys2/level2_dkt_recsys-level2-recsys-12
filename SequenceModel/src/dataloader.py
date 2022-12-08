@@ -45,20 +45,13 @@ class Preprocess:
         np.save(le_path, encoder.classes_)
 
     def __preprocessing(self, df, is_train=True):
-        if self.args.model == "lastquery":
-            cate_cols = [
-                "testId",
-                "assessmentItemID",
-                "KnowledgeTag",
-            ]
-        else:
-            cate_cols = [
-                "testId",
-                "assessmentItemID",
-                "KnowledgeTag",
-                "first3",
-                "hour_answerCode_Level"
-            ]
+        cate_cols = [
+            "testId",
+            "assessmentItemID",
+            "KnowledgeTag",
+            "first3",
+            "hour_answerCode_Level"
+        ]
 
         if not os.path.exists(self.args.asset_dir):
             os.makedirs(self.args.asset_dir)
@@ -115,11 +108,6 @@ class Preprocess:
         csv_file_path = os.path.join(self.args.data_dir, file_name)
         df = pd.read_csv(csv_file_path)  # , nrows=100000)
 
-        if self.args.model == "lastquery":
-            pass
-        else:
-            df = self.__feature_engineering(df)  # featured_train_data.csv 사용으로 대체
-
         df = self.__preprocessing(df, is_train)
 
         # 추후 feature를 embedding할 시에 embedding_layer의 input 크기를 결정할때 사용
@@ -132,86 +120,57 @@ class Preprocess:
         self.args.n_tag = len(
             np.load(os.path.join(self.args.asset_dir, "KnowledgeTag_classes.npy"))
         )
-
-        if not self.args.model == "lastquery":
-            ## input sizes for lstmattn model
-            self.args.n_first3 = len(
-                np.load(os.path.join(self.args.asset_dir, "first3_classes.npy"))
-            )
-            self.args.n_hour_answerCode_Level = len(
-                np.load(
-                    os.path.join(
-                        self.args.asset_dir, "hour_answerCode_Level_classes.npy"
-                    )
+        self.args.n_first3 = len(
+            np.load(os.path.join(self.args.asset_dir, "first3_classes.npy"))
+        )
+        self.args.n_hour_answerCode_Level = len(
+            np.load(
+                os.path.join(
+                    self.args.asset_dir, "hour_answerCode_Level_classes.npy"
                 )
             )
+        )
 
         df = df.sort_values(by=["userID", "Timestamp"], axis=0)
-        if self.args.model == "lastquery":
-            columns = [
-                "userID",
-                "answerCode",
-                "testId",
-                "assessmentItemID",
-                "KnowledgeTag",
-                "elapsedTime",
-                "assessmentItemID_elo_pred",
-            ]
-        else:
-            columns = [
-                "userID",
-                "answerCode",
-                "testId",
-                "assessmentItemID",
-                "KnowledgeTag",
-                "first3",
-                "hour_answerCode_Level",
-                "elapsedTime",
-                "dayofweek_answerCode_mean",
-                "KnowledgeTag_answerCode_mean",
-                "hour_answerCode_mean",
-                "KnowledgeTag_elapsedTime_median",
-                "userID_answerCode_mean",
-                "assessmentItemID_elo_pred",
-            ]
+        
+        columns = [
+            "userID",
+            "answerCode",
+            "testId",
+            "assessmentItemID",
+            "KnowledgeTag",
+            "first3",
+            "hour_answerCode_Level",
+            "elapsedTime",
+            "dayofweek_answerCode_mean",
+            "KnowledgeTag_answerCode_mean",
+            "hour_answerCode_mean",
+            "KnowledgeTag_elapsedTime_median",
+            "userID_answerCode_mean",
+            "assessmentItemID_elo_pred",
+        ]
 
-        if self.args.model == "lastquery":
-            group = (
-                df[columns]
-                .groupby("userID")
-                .apply(
-                    lambda r: (
-                        r["answerCode"].values,
-                        r["testId"].values,
-                        r["assessmentItemID"].values,
-                        r["KnowledgeTag"].values,
-                        r["elapsedTime"].values,
-                        r["assessmentItemID_elo_pred"].values,
-                    )
+        group = (
+            df[columns]
+            .groupby("userID")
+            .apply(
+                lambda r: (
+                    r["answerCode"].values,
+                    r["testId"].values,
+                    r["assessmentItemID"].values,
+                    r["KnowledgeTag"].values,
+                    r["first3"].values,
+                    r["hour_answerCode_Level"].values,
+                    r["elapsedTime"].values,
+                    r["dayofweek_answerCode_mean"].values,
+                    r["KnowledgeTag_answerCode_mean"].values,
+                    r["hour_answerCode_mean"].values,
+                    r["KnowledgeTag_elapsedTime_median"].values,
+                    r["userID_answerCode_mean"].values,
+                    r["assessmentItemID_elo_pred"].values,
                 )
             )
-        else:
-            group = (
-                df[columns]
-                .groupby("userID")
-                .apply(
-                    lambda r: (
-                        r["answerCode"].values,
-                        r["testId"].values,
-                        r["assessmentItemID"].values,
-                        r["KnowledgeTag"].values,
-                        r["first3"].values,
-                        r["hour_answerCode_Level"].values,
-                        r["elapsedTime"].values,
-                        r["dayofweek_answerCode_mean"].values,
-                        r["KnowledgeTag_answerCode_mean"].values,
-                        r["hour_answerCode_mean"].values,
-                        r["KnowledgeTag_elapsedTime_median"].values,
-                        r["userID_answerCode_mean"].values,
-                        r["assessmentItemID_elo_pred"].values,
-                    )
-                )
-            )
+        )
 
         return group.values
 
@@ -233,14 +192,7 @@ class DKTDataset(torch.utils.data.Dataset):
         # 각 data의 sequence length
         seq_len = len(row[0])
 
-        if self.args.model == "lastquery":
-            # correct, test, question, tag = row[0], row[1], row[2], row[3]
-            # elapsed = row[4]
-            
-            conti_idx = [4, 5]  # continous feature 인덱스
-
-        else:
-            conti_idx = [6, 7, 8, 9, 10, 11, 12]  # continuous feature 인덱스
+        conti_idx = [6, 7, 8, 9, 10, 11, 12]  # continuous feature 인덱스
 
         # cate_cols = [correct, test, question, tag]
         feat_cols = list(row)  # cate + conti
