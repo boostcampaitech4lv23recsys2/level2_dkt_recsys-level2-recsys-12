@@ -1,19 +1,21 @@
 import argparse
 import time
 from typing import Optional, Union
+
 from torch import Tensor
+
 
 def parse_args():
     timestr = time.strftime("%m.%d-%H:%M:%S")
     parser = argparse.ArgumentParser()
-    
+
     ### 옵션 ###
     parser.add_argument("--kfold", default=0, type=int, help="apply k-fold if not 0")
     parser.add_argument(
         "--run_wandb", default=False, type=bool, help="option for running wandb"
     )
     wandb_kwargs = dict(project="DKT_LGCN", entity="ai-tech-4-recsys-12")
-    
+
     parser.add_argument(
         "--basepath",
         default="/opt/ml/input/data/",
@@ -26,53 +28,24 @@ def parse_args():
         type=bool,
         help="verbose on/off",
     )
+    parser.add_argument("--timestr", default=timestr, type=str, help="timestr")
     parser.add_argument(
-        "--timestr",
-        default=timestr,
-        type=str,
-        help="timestr"
-    )
-    parser.add_argument(
-        "--output_dir",
-        default="./output/",
-        type=str,
-        help="output_dir"
+        "--output_dir", default="./output/", type=str, help="output_dir"
     )
     parser.add_argument(
         "--pred_file",
         default="submission_{}.csv".format(timestr),
         type=str,
-        help="pred_file"
-    )    
-    parser.add_argument(
-        "--embedding_dim",
-        default=64,
-        type=int,
-        help="embedding_dim"
-    )    
-    parser.add_argument(
-        "--num_layers",
-        default=3,
-        type=int,
-        help="num_layers"
+        help="pred_file",
     )
+    parser.add_argument("--embedding_dim", default=64, type=int, help="embedding_dim")
+    parser.add_argument("--num_layers", default=3, type=int, help="num_layers")
     parser.add_argument(
-        "--alpha",
-        default=None,
-        type=Optional[Union[float, Tensor]],
-        help="alpha"
-    )    
+        "--alpha", default=None, type=Optional[Union[float, Tensor]], help="alpha"
+    )
+    parser.add_argument("--build_kwargs", default={}, type=dict, help="build_kwargs")
     parser.add_argument(
-        "--build_kwargs",
-        default={},
-        type=dict,
-        help="build_kwargs"
-    ) 
-    parser.add_argument(
-        "--weight",
-        default="./weight/best_model.pt",
-        type=str,
-        help="weight path"
+        "--weight", default="./weight/best_model.pt", type=str, help="weight path"
     )
     parser.add_argument(
         "--n_epoch",
@@ -83,7 +56,7 @@ def parse_args():
         "--learning_rate",
         default=0.001,
         type=float,
-    )    
+    )
     parser.add_argument(
         "--weight_basepath",
         default="./weight",
@@ -104,7 +77,7 @@ def parse_args():
         default=0.2,
         type=float,
     )
-    
+
     args = parser.parse_args()
-    
+
     return args, wandb_kwargs

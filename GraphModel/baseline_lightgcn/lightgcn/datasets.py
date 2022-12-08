@@ -1,10 +1,10 @@
 import os
+import sys
 
 import pandas as pd
 import torch
 from sklearn.model_selection import train_test_split
 
-import sys
 sys.path.append("../../")
 from feature_engineering import feature_engineering
 

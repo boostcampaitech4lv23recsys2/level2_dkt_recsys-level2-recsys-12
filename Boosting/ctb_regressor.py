@@ -4,21 +4,21 @@
 # In[34]:
 
 
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
 import os
 import sys
 
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
+
 sys.path.append(r"../")
-from data_loader import ctb_data_loader
-from sklearn.model_selection import GridSearchCV, KFold, StratifiedKFold
-from sklearn.metrics import accuracy_score, roc_auc_score
-
-from catboost import CatBoostRegressor
-
 from datetime import datetime
 
+from catboost import CatBoostRegressor
+from sklearn.metrics import accuracy_score, roc_auc_score
+from sklearn.model_selection import GridSearchCV, KFold, StratifiedKFold
+
+from data_loader import ctb_data_loader
 
 # In[35]:
 
@@ -26,51 +26,49 @@ from datetime import datetime
 IS_CUSTOM = True
 USE_VALID = True
 DROPS = [
-    'assessmentItemID','testId','Timestamp','year','day','minute','second',
+    "assessmentItemID",
+    "testId",
+    "Timestamp",
+    "year",
+    "day",
+    "minute",
+    "second",
     # 'userID',
     # 'KnowledgeTag',
-    
     # 'userAnswerRate',
     # 'tagAnswerRate',
     # 'itemAnswerRate',
     # 'testAnswerRate',
     # 'timeConcentrationRate',
     # 'monthAnswerRate',
-
-    'userSolvedLen',
-    'testSolvedLen',
-    'tagSolvedLen',
-    'itemSolvedLen',
-    'timeConcentrationCount',
-    'monthSolvedCount',
-
+    "userSolvedLen",
+    "testSolvedLen",
+    "tagSolvedLen",
+    "itemSolvedLen",
+    "timeConcentrationCount",
+    "monthSolvedCount",
     # 'userSolvedSum',
     # 'itemSolvedSum',
     # 'testSolvedSum',
     # 'tagSolvedSum',
     # 'timeConcentraionSum',
     # 'monthSolvedSum',
-
     # 'testSolvedVar',
     # 'userSolvedVar',
     # 'tagSolvedVar',
     # 'itemSolvedVar',
     # 'timeConcentrationVar',
     # 'monthSolvedVar',
-
     # 'timeConcentrationLevel',
-
     # 'month',
     # 'hour',
-
     # 'first3',
     # 'mid3',
     # 'last3',
-
     # 'user_correct_answer',
     # 'user_total_answer',
     # 'user_acc',
-    ]
+]
 
 
 # # CTB preprocessing
@@ -78,8 +76,10 @@ DROPS = [
 # In[36]:
 
 
-x_train, x_valid, y_train, y_valid, test = ctb_data_loader(IS_CUSTOM=IS_CUSTOM, USE_VALID=USE_VALID, DROPS=DROPS)
-cat_features = x_train.columns[x_train.nunique()<200].to_list()
+x_train, x_valid, y_train, y_valid, test = ctb_data_loader(
+    IS_CUSTOM=IS_CUSTOM, USE_VALID=USE_VALID, DROPS=DROPS
+)
+cat_features = x_train.columns[x_train.nunique() < 200].to_list()
 
 
 # # CatBoostRegressor
@@ -87,24 +87,38 @@ cat_features = x_train.columns[x_train.nunique()<200].to_list()
 # In[37]:
 
 
-model = CatBoostRegressor(cat_features=cat_features, task_type="GPU", leaf_estimation_iterations=10, od_type="Iter", logging_level="Silent")
+model = CatBoostRegressor(
+    cat_features=cat_features,
+    task_type="GPU",
+    leaf_estimation_iterations=10,
+    od_type="Iter",
+    logging_level="Silent",
+)
 # , logging_level="Silent","Info"
 if USE_VALID:
-    model = CatBoostRegressor(cat_features=cat_features, task_type="GPU", use_best_model=True, leaf_estimation_iterations=10, od_type="Iter", early_stopping_rounds=100, logging_level="Silent")
+    model = CatBoostRegressor(
+        cat_features=cat_features,
+        task_type="GPU",
+        use_best_model=True,
+        leaf_estimation_iterations=10,
+        od_type="Iter",
+        early_stopping_rounds=100,
+        logging_level="Silent",
+    )
 
 predict = None
 param_grid = {
-        'iterations': [200],
-        'depth': [10],
-        'learning_rate': [0.1],
-        # 'custom_loss': ['TotalF1'],
-        # 'eval_metric': ['TotalF1'],
-        # 'random_seed': [42],
-        # 'min_data_in_leaf': [3,4,5],
-        # 'max_leaves': [200],
-        # 'l2_leaf_reg': [100],
-        # 'border_count': [100],
-        # 'bagging_temperature': [500],
+    "iterations": [200],
+    "depth": [10],
+    "learning_rate": [0.1],
+    # 'custom_loss': ['TotalF1'],
+    # 'eval_metric': ['TotalF1'],
+    # 'random_seed': [42],
+    # 'min_data_in_leaf': [3,4,5],
+    # 'max_leaves': [200],
+    # 'l2_leaf_reg': [100],
+    # 'border_count': [100],
+    # 'bagging_temperature': [500],
 }
 cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
 # cv = KFold(n_splits=6, random_state=42, shuffle=True)
@@ -123,11 +137,11 @@ gcv = GridSearchCV(
 # In[38]:
 
 
-show=False
+show = False
 if USE_VALID:
-    gcv.fit(x_train, y_train, eval_set=[(x_valid, y_valid)],plot=show, verbose=show)
+    gcv.fit(x_train, y_train, eval_set=[(x_valid, y_valid)], plot=show, verbose=show)
 else:
-    gcv.fit(x_train, y_train,plot=show, verbose=show)
+    gcv.fit(x_train, y_train, plot=show, verbose=show)
 # , verbose=2, silent=False
 print("final params", gcv.best_params_)
 print("best score", gcv.best_score_)
@@ -183,18 +197,14 @@ if IS_CUSTOM:
 ft_importance_values = model.feature_importances_
 
 # 정렬과 시각화를 쉽게 하기 위해 series 전환
-ft_series = pd.Series(ft_importance_values, index = x_train.columns)
+ft_series = pd.Series(ft_importance_values, index=x_train.columns)
 ft_top20 = ft_series.sort_values(ascending=False)[:20]
 
 # 시각화
-plt.figure(figsize=(8,6))
-plt.title('Feature Importance Top 20')
+plt.figure(figsize=(8, 6))
+plt.title("Feature Importance Top 20")
 sns.barplot(x=ft_top20, y=ft_top20.index)
 plt.show()
 
 
 # In[ ]:
-
-
-
-

@@ -1,14 +1,14 @@
 import os
+import sys
 
 import pandas as pd
 import torch
 from sklearn.model_selection import train_test_split
 
-import sys
 sys.path.append("../../")
 from feature_engineering import feature_engineering
 
-using_feature = ["KnowledgeTag", "first3"] # 그 범주에 따라서, 문제의 정답률이 상이하다 -> 넣으면 좋아.
+using_feature = ["KnowledgeTag", "first3"]  # 그 범주에 따라서, 문제의 정답률이 상이하다 -> 넣으면 좋아.
 
 # code/feature_engineering.py
 def prepare_dataset(device, basepath, verbose=True, logger=None, isTrain=False):
@@ -29,7 +29,14 @@ def prepare_dataset(device, basepath, verbose=True, logger=None, isTrain=False):
             print_data_stat(train_data, "Train", logger=logger)
             print_data_stat(test_data, "Test", logger=logger)
             print_data_stat(valid_data, "Valid", logger=logger)
-        return train_data_proc, test_data_proc, valid_data_proc, feature_sorted_list, num_features_list, len(id2index)
+        return (
+            train_data_proc,
+            test_data_proc,
+            valid_data_proc,
+            feature_sorted_list,
+            num_features_list,
+            len(id2index),
+        )
     else:
         data = load_data(basepath)
         train_data, test_data = separate_data(data)
@@ -39,7 +46,13 @@ def prepare_dataset(device, basepath, verbose=True, logger=None, isTrain=False):
         if verbose:
             print_data_stat(train_data, "Train", logger=logger)
             print_data_stat(test_data, "Test", logger=logger)
-        return train_data_proc, test_data_proc, feature_sorted_list, num_features_list, len(id2index)
+        return (
+            train_data_proc,
+            test_data_proc,
+            feature_sorted_list,
+            num_features_list,
+            len(id2index),
+        )
 
 
 def load_data(basepath):
@@ -78,11 +91,13 @@ def indexing_data(data):
     # itemid: 고유한 assessmentItemID들이 정렬된 리스트
     userid, itemid = (
         sorted(list(set(data.userID))),
-        sorted(list(set(data.assessmentItemID)))
+        sorted(list(set(data.assessmentItemID))),
     )
     n_user, n_item = len(userid), len(itemid)
-    
-    featureid = [sorted(list(set(data[feature_name]))) for feature_name in using_feature]
+
+    featureid = [
+        sorted(list(set(data[feature_name]))) for feature_name in using_feature
+    ]
     n_feature = [len(val) for val in featureid]
 
     # {7439: 7439, 7440: 7440, 7441: 7441} 형태의 dict
@@ -91,23 +106,37 @@ def indexing_data(data):
     itemid_2_index = {v: i + n_user for i, v in enumerate(itemid)}
     # userid_2_index와 itemid_2_index 를 하나의 dict로 합치기
     id_2_index = dict(userid_2_index, **itemid_2_index)
-    
-    # feature 정보 사용하기
-    feature_data = data[["assessmentItemID"] + using_feature].groupby("assessmentItemID").head(1).copy()
-    # feature 각각에 대한 dict를 저장하는 list
-    feature_2_index_list = [{v: i for i, v in enumerate(_featureid)} for _featureid in featureid]
 
-    feature_data["assessmentItemID"] = feature_data["assessmentItemID"].map(itemid_2_index)
-            
+    # feature 정보 사용하기
+    feature_data = (
+        data[["assessmentItemID"] + using_feature]
+        .groupby("assessmentItemID")
+        .head(1)
+        .copy()
+    )
+    # feature 각각에 대한 dict를 저장하는 list
+    feature_2_index_list = [
+        {v: i for i, v in enumerate(_featureid)} for _featureid in featureid
+    ]
+
+    feature_data["assessmentItemID"] = feature_data["assessmentItemID"].map(
+        itemid_2_index
+    )
+
     for i, feature_name in enumerate(using_feature):
-        feature_data[feature_name] = feature_data[feature_name].map(feature_2_index_list[i])
-    
+        feature_data[feature_name] = feature_data[feature_name].map(
+            feature_2_index_list[i]
+        )
+
     feature_data = feature_data.sort_values(["assessmentItemID"] + using_feature)
-    
-    feature_sorted_list = [feature_data[feature_name].tolist() for feature_name in using_feature]
+
+    feature_sorted_list = [
+        feature_data[feature_name].tolist() for feature_name in using_feature
+    ]
     num_features_list = [n_user, n_item] + n_feature
 
     return id_2_index, feature_sorted_list, num_features_list
+
 
 """
     data:
@@ -115,6 +144,8 @@ def indexing_data(data):
     id_2_index:
         {userID:인덱스, ..., assessmentItemID:인덱스} 형태의 dict
 """
+
+
 def process_data(data, id_2_index, device, isTrain=False):
     edge, label = [], []
     # edge: [[64, 8932], ..., [7340, 12539]] 형태

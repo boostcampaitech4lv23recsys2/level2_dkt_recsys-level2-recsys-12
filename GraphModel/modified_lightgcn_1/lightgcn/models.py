@@ -1,4 +1,6 @@
 import os
+# from torch_geometric.nn.models import LightGCN
+import sys
 
 import numpy as np
 import torch
@@ -6,8 +8,7 @@ from config import CFG
 from custom_scheduler import CosineAnnealingWarmUpRestarts as wca
 from sklearn.metrics import (accuracy_score, f1_score, precision_score,
                              recall_score, roc_auc_score)
-# from torch_geometric.nn.models import LightGCN
-import sys
+
 sys.path.append("../")
 # from LightGCN import *
 from LightGCN_modify_1 import *
@@ -18,14 +19,29 @@ from LightGCN_modify_1 import *
     weight:
         test 시에, model inference할 저장한 weight 불러오기
 """
-def build(n_node, feature_sorted_list, num_features_list, feature_weight, num_layers, alpha, embedding_dim, weight=None, logger=None, **kwargs):
-    model = LightGCN(feature_sorted_list=feature_sorted_list,
-                     num_features_list=num_features_list,
-                     embedding_dim=embedding_dim,
-                     num_layers=num_layers,
-                     alpha=alpha,
-                     feature_weight=feature_weight,
-                     **kwargs)
+
+
+def build(
+    n_node,
+    feature_sorted_list,
+    num_features_list,
+    feature_weight,
+    num_layers,
+    alpha,
+    embedding_dim,
+    weight=None,
+    logger=None,
+    **kwargs,
+):
+    model = LightGCN(
+        feature_sorted_list=feature_sorted_list,
+        num_features_list=num_features_list,
+        embedding_dim=embedding_dim,
+        num_layers=num_layers,
+        alpha=alpha,
+        feature_weight=feature_weight,
+        **kwargs,
+    )
     if weight:
         if not os.path.isfile(weight):
             logger.fatal("Model Weight File Not Exist")

@@ -1,7 +1,8 @@
 import pandas as pd
 from sklearn.metrics import accuracy_score, roc_auc_score
 
-def check_accuracy(PRED_PATH = "Boosting/output/lgbm_submission.csv"):
+
+def check_accuracy(PRED_PATH="Boosting/output/lgbm_submission.csv"):
     threshold = 0.5
 
     ANSWER_PATH = "../data/custom_answer.csv"
@@ -11,7 +12,10 @@ def check_accuracy(PRED_PATH = "Boosting/output/lgbm_submission.csv"):
 
     y_pred, y = submission_result["prediction"], answer["prediction"]
 
-    return roc_auc_score(y,y_pred), accuracy_score(y,y_pred.apply(lambda x: 1 if x > threshold else 0))
+    return roc_auc_score(y, y_pred), accuracy_score(
+        y, y_pred.apply(lambda x: 1 if x > threshold else 0)
+    )
+
 
 if __name__ == "__main__":
     auc, acc = check_accuracy()

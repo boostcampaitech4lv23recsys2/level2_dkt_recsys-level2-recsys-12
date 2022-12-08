@@ -110,14 +110,12 @@ class LSTMATTN(nn.Module):
         self.embedding_hour_answerCode_Level = nn.Embedding(
             self.args.n_hour_answerCode_Level + 1, self.hidden_dim // 3
         )
-        
+
         # embedding combination projection
-        self.comb_proj_cont = nn.Linear(
-            7, self.hidden_dim
-        )
+        self.comb_proj_cont = nn.Linear(7, self.hidden_dim)
         self.comb_proj_cate = nn.Linear((self.hidden_dim // 3) * 6, self.hidden_dim)
-        self.comb_proj = nn.Linear(self.hidden_dim * 2, self.hidden_dim)      
-        
+        self.comb_proj = nn.Linear(self.hidden_dim * 2, self.hidden_dim)
+
         self.norm = nn.BatchNorm1d(self.args.max_seq_len)
 
         self.lstm = nn.LSTM(
@@ -183,18 +181,23 @@ class LSTMATTN(nn.Module):
             2,
         )
         embed_cate = self.comb_proj_cate(embed_cate)
-        
+
         # Continuous features
-        conti = torch.stack([elapsedTime,
-            dayofweek_answerCode_mean,
-            KnowledgeTag_answerCode_mean,
-            hour_answerCode_mean,
-            KnowledgeTag_elapsedTime_median,
-            userID_answerCode_mean,
-            assessmentItemID_elo_pred], 2)
+        conti = torch.stack(
+            [
+                elapsedTime,
+                dayofweek_answerCode_mean,
+                KnowledgeTag_answerCode_mean,
+                hour_answerCode_mean,
+                KnowledgeTag_elapsedTime_median,
+                userID_answerCode_mean,
+                assessmentItemID_elo_pred,
+            ],
+            2,
+        )
         conti_layer = self.comb_proj_cont(conti)
         norm_conti_layer = self.norm(conti_layer)
-        
+
         # embedding input features (cate + cont)
         embed = torch.cat([embed_cate, norm_conti_layer], 2)
         X = self.comb_proj(embed)
@@ -335,15 +338,13 @@ class LastQuery(nn.Module):
         self.embedding_tag = nn.Embedding(self.args.n_tag + 1, self.hidden_dim // 3)
         self.embedding_position = nn.Embedding(self.args.max_seq_len, self.hidden_dim)
 
-        self.conti_layer = nn.Linear(
-            2, self.hidden_dim  # number of continous feature
-        )
+        self.conti_layer = nn.Linear(2, self.hidden_dim)  # number of continous feature
 
         # embedding combination projection
         self.comb_proj = nn.Linear(self.hidden_dim * 2, self.hidden_dim)
 
         self.comb_proj_cate = nn.Linear((self.hidden_dim // 3) * 4, self.hidden_dim)
-        
+
         self.bn = nn.BatchNorm1d(self.args.max_seq_len)
 
         # 기존 keetar님 솔루션에서는 Positional Embedding은 사용되지 않습니다
