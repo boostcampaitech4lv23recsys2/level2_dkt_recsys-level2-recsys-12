@@ -30,9 +30,9 @@ Naver Boostcamp AI Tech 4기 Recsys 12조, **Recommendation is All You Need**
 
 ## :100:Result
 
-| 리더보드 | Score|
-| :---: | :---: |
-| public | 0.8104 |
-| private | 0.8503 |
+| 리더보드 | Score| 순위 |
+| :---: | :---: | :---: |
+| public | 0.8104 | 13등 |
+| private | 0.8503 | 4등 |
 
 **최종 순위: 전체 13팀 중 4등**
