@@ -213,10 +213,7 @@ def train(train_loader, model, optimizer, scheduler, args, gradient=False):
     total_targets = []
     losses = []
     for step, batch in enumerate(train_loader):
-        if args.model == "lastquery":
-            input = list(map(lambda t: t.to(args.device), process_batch_lq(batch)))
-        else:
-            input = list(map(lambda t: t.to(args.device), process_batch(batch)))
+        input = list(map(lambda t: t.to(args.device), process_batch(batch)))
         preds = model(input)
         targets = input[0]  # correct: 0
 
@@ -250,10 +247,7 @@ def validate(valid_loader, model, args):
     total_preds = []
     total_targets = []
     for step, batch in enumerate(valid_loader):
-        if args.model == "lastquery":
-            input = list(map(lambda t: t.to(args.device), process_batch_lq(batch)))
-        else:
-            input = list(map(lambda t: t.to(args.device), process_batch(batch)))
+        input = list(map(lambda t: t.to(args.device), process_batch(batch)))
 
         preds = model(input)
         targets = input[0]  # correct: 0
@@ -284,10 +278,7 @@ def inference(args, test_data, model):
     total_preds = []
 
     for step, batch in enumerate(test_loader):
-        if args.model == "lastquery":
-            input = list(map(lambda t: t.to(args.device), process_batch_lq(batch)))
-        else:
-            input = list(map(lambda t: t.to(args.device), process_batch(batch)))
+        input = list(map(lambda t: t.to(args.device), process_batch(batch)))
 
         preds = model(input)
 
@@ -319,10 +310,7 @@ def inference_kfold(args, test_data, model, fold):
     total_preds = []
 
     for step, batch in enumerate(test_loader):
-        if args.model == "lastquery":
-            input = list(map(lambda t: t.to(args.device), process_batch_lq(batch)))
-        else:
-            input = list(map(lambda t: t.to(args.device), process_batch(batch)))
+        input = list(map(lambda t: t.to(args.device), process_batch(batch)))
 
         preds = model(input)
 
