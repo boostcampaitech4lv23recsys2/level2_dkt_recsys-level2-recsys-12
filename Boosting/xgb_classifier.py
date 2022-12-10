@@ -4,21 +4,21 @@
 # In[6]:
 
 
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
 import os
 import sys
 
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
+
 sys.path.append(r"../")
-from data_loader import xgb_data_loader, xgb_PCA_data_loader
-from sklearn.model_selection import GridSearchCV, KFold, StratifiedKFold
-from sklearn.metrics import accuracy_score, roc_auc_score
-
-from xgboost import XGBClassifier
-
 from datetime import datetime
 
+from sklearn.metrics import accuracy_score, roc_auc_score
+from sklearn.model_selection import GridSearchCV, KFold, StratifiedKFold
+from xgboost import XGBClassifier
+
+from data_loader import xgb_data_loader, xgb_PCA_data_loader
 
 # # Load Preprocessed data
 
@@ -29,55 +29,57 @@ IS_CUSTOM = True
 USE_VALID = True
 n_components = 0
 DROPS = [
-    'assessmentItemID','testId','Timestamp','year','day','minute','second',
+    "assessmentItemID",
+    "testId",
+    "Timestamp",
+    "year",
+    "day",
+    "minute",
+    "second",
     # 'userID',
     # 'KnowledgeTag',
-    
     # 'userAnswerRate',
     # 'tagAnswerRate',
     # 'itemAnswerRate',
     # 'testAnswerRate',
     # 'timeConcentrationRate',
     # 'monthAnswerRate',
-
     # 'userSolvedLen',
     # 'testSolvedLen',
     # 'tagSolvedLen',
     # 'itemSolvedLen',
     # 'timeConcentrationCount',
     # 'monthSolvedCount',
-
     # 'userSolvedSum',
     # 'itemSolvedSum',
     # 'testSolvedSum',
     # 'tagSolvedSum',
     # 'timeConcentraionSum',
     # 'monthSolvedSum',
-
     # 'testSolvedVar',
     # 'userSolvedVar',
     # 'tagSolvedVar',
     # 'itemSolvedVar',
     # 'timeConcentrationVar',
     # 'monthSolvedVar',
-
     # 'timeConcentrationLevel',
-
     # 'month',
     # 'hour',
-
     # 'first3',
     # 'mid3',
     # 'last3',
-
     # 'user_correct_answer',
     # 'user_total_answer',
     # 'user_acc',
-    ]
+]
 if n_components:
-    x_train, x_valid, y_train, y_valid, test = xgb_PCA_data_loader(IS_CUSTOM=IS_CUSTOM,USE_VALID=USE_VALID,DROPS=DROPS, n_components=n_components)
+    x_train, x_valid, y_train, y_valid, test = xgb_PCA_data_loader(
+        IS_CUSTOM=IS_CUSTOM, USE_VALID=USE_VALID, DROPS=DROPS, n_components=n_components
+    )
 else:
-    x_train, x_valid, y_train, y_valid, test = xgb_data_loader(IS_CUSTOM=IS_CUSTOM,USE_VALID=USE_VALID,DROPS=DROPS)
+    x_train, x_valid, y_train, y_valid, test = xgb_data_loader(
+        IS_CUSTOM=IS_CUSTOM, USE_VALID=USE_VALID, DROPS=DROPS
+    )
 
 
 # # XGBClassifier
@@ -186,6 +188,7 @@ if IS_CUSTOM:
 
 
 from xgboost import plot_importance
+
 plot_importance(model)
 
 
@@ -195,12 +198,12 @@ plot_importance(model)
 ft_importance_values = model.feature_importances_
 
 # 정렬과 시각화를 쉽게 하기 위해 series 전환
-ft_series = pd.Series(ft_importance_values, index = x_train.columns)
+ft_series = pd.Series(ft_importance_values, index=x_train.columns)
 ft_top20 = ft_series.sort_values(ascending=False)[:20]
 
 # 시각화
-plt.figure(figsize=(8,6))
-plt.title('Feature Importance Top 20')
+plt.figure(figsize=(8, 6))
+plt.title("Feature Importance Top 20")
 sns.barplot(x=ft_top20, y=ft_top20.index)
 plt.show()
 
@@ -208,29 +211,13 @@ plt.show()
 # In[ ]:
 
 
-
+# In[ ]:
 
 
 # In[ ]:
 
 
-
-
-
 # In[ ]:
 
 
-
-
-
 # In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-

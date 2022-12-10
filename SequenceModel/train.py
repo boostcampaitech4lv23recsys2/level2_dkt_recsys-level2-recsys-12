@@ -1,7 +1,6 @@
 import os
 
 import torch
-
 import wandb
 from args import parse_args
 from src import trainer

@@ -3,7 +3,6 @@ import os
 import pandas as pd
 import torch
 from config import CFG, logging_conf
-
 from lightgcn.datasets import prepare_dataset
 from lightgcn.models import build, inference
 from lightgcn.utils import get_logger
@@ -20,7 +19,13 @@ def main():
     logger.info("Task Started")
 
     logger.info("[1/4] Data Preparing - Start")
-    train_data, test_data, feature_sorted_list, num_features_list, n_node = prepare_dataset(
+    (
+        train_data,
+        test_data,
+        feature_sorted_list,
+        num_features_list,
+        n_node,
+    ) = prepare_dataset(
         device,
         CFG.basepath,
         verbose=CFG.loader_verbose,

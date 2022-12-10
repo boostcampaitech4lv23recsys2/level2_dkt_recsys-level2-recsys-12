@@ -1,7 +1,6 @@
 import pandas as pd
 import torch
 from config import CFG, logging_conf
-
 from lightgcn.datasets import prepare_dataset
 from lightgcn.models import build, train
 from lightgcn.utils import class2dict, get_logger
@@ -44,7 +43,14 @@ def main():
         n_node:
             answerCode=-1인 경우 포함해서 모든 유저-문제 간의 interaction 개수
     """
-    train_data, test_data, valid_data, feature_sorted_list, num_features_list, n_node = prepare_dataset(
+    (
+        train_data,
+        test_data,
+        valid_data,
+        feature_sorted_list,
+        num_features_list,
+        n_node,
+    ) = prepare_dataset(
         device,
         CFG.basepath,
         verbose=CFG.loader_verbose,
@@ -73,7 +79,7 @@ def main():
     logger.info("[2/3] Model Building - Done")
 
     logger.info("[3/3] Model Training - Start")
-    
+
     train(
         model,
         train_data,

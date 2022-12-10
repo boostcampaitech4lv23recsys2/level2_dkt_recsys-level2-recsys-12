@@ -50,7 +50,7 @@ class Preprocess:
             "assessmentItemID",
             "KnowledgeTag",
             "first3",
-            "hour_answerCode_Level"
+            "hour_answerCode_Level",
         ]
 
         if not os.path.exists(self.args.asset_dir):
@@ -77,31 +77,10 @@ class Preprocess:
             test = le.transform(df[col])
             df[col] = test
 
-        # def convert_time(s):
-        #     timestamp = time.mktime(
-        #         datetime.strptime(s, "%Y-%m-%d %H:%M:%S").timetuple()
-        #     )
-        #     return int(timestamp)
-
-        # df["Timestamp"] = df["Timestamp"].apply(convert_time) # legacy 코드 비활성화
-
         return df
 
     def __feature_engineering(self, df):
-        if self.args.model == "lastquery":
-            return df
-        else:
-            # 범주형으로 처리할 때, 감당 가능한 시간 내의 encoding을 지원하기 위해 소수점 4자리에서 자름
-            df["assessmentItemID_elo_pred"] = round(df["assessmentItemID_elo_pred"], 4)
-            # 연속형 변수들의 정규화
-            df["elapsedTime"] = (df["elapsedTime"] - df["elapsedTime"].mean()) / df["elapsedTime"].std()
-            df["dayofweek_answerCode_mean"] = (df["dayofweek_answerCode_mean"] - df["dayofweek_answerCode_mean"].mean()) / df["dayofweek_answerCode_mean"].std()
-            df["KnowledgeTag_answerCode_mean"] = (df["KnowledgeTag_answerCode_mean"] - df["KnowledgeTag_answerCode_mean"].mean()) / df["KnowledgeTag_answerCode_mean"].std()
-            df["hour_answerCode_mean"] = (df["hour_answerCode_mean"] - df["hour_answerCode_mean"].mean()) / df["hour_answerCode_mean"].std()
-            df["KnowledgeTag_elapsedTime_median"] = (df["KnowledgeTag_elapsedTime_median"] - df["KnowledgeTag_elapsedTime_median"].mean()) / df["KnowledgeTag_elapsedTime_median"].std()
-            df["userID_answerCode_mean"] = (df["userID_answerCode_mean"] - df["userID_answerCode_mean"].mean()) / df["userID_answerCode_mean"].std()
-            df["assessmentItemID_elo_pred"] = (df["assessmentItemID_elo_pred"] - df["assessmentItemID_elo_pred"].mean()) / df["assessmentItemID_elo_pred"].std()
-            
+        pass
         return df
 
     def load_data_from_file(self, file_name, is_train=True):
@@ -192,12 +171,12 @@ class DKTDataset(torch.utils.data.Dataset):
         # 각 data의 sequence length
         seq_len = len(row[0])
 
-        conti_idx = [6, 7, 8, 9, 10, 11, 12]  # continuous feature 인덱스
+        if self.args.model == "lastquery":
+            conti_idx = [4, 5]  # continous feature 인덱스
+        else:
+            conti_idx = [6, 7, 8, 9, 10, 11, 12]  # continuous feature 인덱스
 
-        # cate_cols = [correct, test, question, tag]
         feat_cols = list(row)  # cate + conti
-
-        # cate_cols = list(row)
 
         # max seq len을 고려하여서 이보다 길면 자르고 아닐 경우 그대로 냅둔다
         if seq_len > self.args.max_seq_len:
@@ -209,7 +188,6 @@ class DKTDataset(torch.utils.data.Dataset):
             mask[-seq_len:] = 1
 
         # mask도 columns 목록에 포함시킴
-        # cate_cols.append(mask)
         feat_cols.append(mask)
 
         # np.array -> torch.tensor 형변환
