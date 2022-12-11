@@ -6,7 +6,7 @@
 
 <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=Python&logoColor=white"> <img src="https://img.shields.io/badge/PyTorch-EE4C2C?style=for-the-badge&logo=PyTorch&logoColor=white"> <img src="https://img.shields.io/badge/Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white"> <img src="https://img.shields.io/badge/Numpy-013243?style=for-the-badge&logo=Numpy&logoColor=white"> <img src="https://img.shields.io/badge/Pandas-150458?style=for-the-badge&logo=Pandas&logoColor=white"> <img src="https://img.shields.io/badge/W&B-FFBE00?style=for-the-badge&logo=WeightsandBiases&logoColor=white"> <img src="https://img.shields.io/badge/Scikit_learn-F7931E?style=for-the-badge&logo=scikitlearn&logoColor=white">
 
-## :loudspeaker:Competition Introduction
+## :loudspeaker: Competition Introduction
 
 초등학교, 중학교, 고등학교, 대학교와 같은 교육기관에서 우리는 시험을 늘 봐왔습니다. 시험 성적이 높은 과목은 우리가 잘 아는 것을 나타내고 시험 성적이 낮은 과목은 반대로 공부가 더욱 필요함을 나타냅니다. 시험은 우리가 얼마만큼 아는지 평가하는 한 방법입니다.
 
@@ -28,7 +28,7 @@ Naver Boostcamp AI Tech 4기 Recsys 12조, **Recommendation is All You Need**
 | :---: | :---: | :---: | :---: | :---: |  
 | [강태훈](https://github.com/thkyang324) | [권준혁](https://github.com/tree-jhk) | [김다은](https://github.com/daeni-dang) | [류지수](https://github.com/JisooRyu99) | [유영서](https://github.com/7dudtj) |
 
-## :100:Result
+## :100: Result
 
 | 리더보드 | Score| 순위 |
 | :---: | :---: | :---: |
