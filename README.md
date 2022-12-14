@@ -14,11 +14,7 @@
 
 DKT는 Deep Knowledge Tracing의 약자로 우리의 "지식 상태"를 추적하는 딥러닝 방법론입니다.
 
-시험을 보는 것은 동일하지만 단순히 우리가 수학을 80점을 맞았다고 알려주는 것을 넘어서 우리가 수학이라는 과목을 얼마만큼 이해하고 있는지를 측정하여 줍니다. 게다가 이런 이해도를 활용하여 우리가 아직 풀지 않은 미래의 문제에 대해서 우리가 맞을지 틀릴지 예측이 가능합니다!
-
-이런 DKT를 활용하면 우리는 학생 개개인에게 수학의 이해도와 취약한 부분을 극복하기 위해 어떤 문제들을 풀면 좋을지 추천이 가능합니다! 그렇기 때문에 DKT는 교육 AI의 추천이라고도 불립니다. DKT는 맞춤화된 교육을 제공하기 위해 아주 중요한 역할을 맡게 됩니다.
-
-우리는 대회에서 Iscream 데이터셋을 이용하여 DKT모델을 구축할 것입니다. 다만 대회에서는 학생 개개인의 이해도를 가리키는 지식 상태를 예측하는 일보다는, 주어진 문제를 맞출지 틀릴지 예측하는 것에 집중할 것입니다! 우리는 각 학생이 푼 문제 리스트와 정답 여부가 담긴 데이터를 받아 최종 문제를 맞출지 틀릴지 예측할 것입니다!
+DKT에 대한 더 자세한 내용은 [프로젝트 개요](https://github.com/boostcampaitech4lv23recsys2/level2_dkt_recsys-level2-recsys-12/wiki/Overview) 에서 확인할 수 있습니다!
 
 ## :droplet:Team Members
 
@@ -27,6 +23,20 @@ Naver Boostcamp AI Tech 4기 Recsys 12조, **Recommendation is All You Need**
 | [<img src="https://github.com/thkyang324.png" width="100px">](https://github.com/thkyang324) | [<img src="https://github.com/tree-jhk.png" width="100px">](https://github.com/tree-jhk) | [<img src="https://github.com/daeni-dang.png" width="100px">](https://github.com/daeni-dang) | [<img src="https://github.com/JisooRyu99.png" width="100px">](https://github.com/JisooRyu99) | [<img src="https://github.com/7dudtj.png" width="100px">](https://github.com/7dudtj) |  
 | :---: | :---: | :---: | :---: | :---: |  
 | [강태훈](https://github.com/thkyang324) | [권준혁](https://github.com/tree-jhk) | [김다은](https://github.com/daeni-dang) | [류지수](https://github.com/JisooRyu99) | [유영서](https://github.com/7dudtj) |
+
+## :santa: How we work?
+팀원 간의 원활한 소통을 위해, 다양한 협업 도구를 사용하였습니다!
+
+- ### Working Tools
+
+Slack | Notion | W&B | Github
+:---: | :---: | :---: | :---:
+<img src="https://user-images.githubusercontent.com/67851701/207574270-2e4aaead-f915-41a4-b3b1-ed2252e60cc3.png"  width="100" height="100"/> | <img src="https://user-images.githubusercontent.com/67851701/207574394-07b37c3d-e32d-44e9-a359-0e8935ef7bf2.png"  width="100" height="100"/> | <img src="https://user-images.githubusercontent.com/67851701/207574592-db1e7b71-fb3d-4db3-889d-157a8e70fd38.png"  width="100" height="100"/> | <img src="https://user-images.githubusercontent.com/67851701/207576204-88378715-df1f-41af-8394-c5115a2b8999.png"  width="100" height="100"/>
+
+저희 팀의 협업 방식에 대하여 더 궁금하시다면, [Team RAYN의 협업 방식](https://github.com/boostcampaitech4lv23recsys2/level2_dkt_recsys-level2-recsys-12/wiki/Cooperation) 에서 확인할 수 있습니다!
+
+## :seedling: To see more
+저희 Project에 대한 더 자세한 정보를 알고싶으시다면, [Project Wiki](https://github.com/boostcampaitech4lv23recsys2/level2_dkt_recsys-level2-recsys-12/wiki) 를 확인하세요!
 
 ## :100: Result
 
@@ -38,3 +48,5 @@ Naver Boostcamp AI Tech 4기 Recsys 12조, **Recommendation is All You Need**
 **최종 순위: 전체 13팀 중 4등**
 
 <p> <img src="https://user-images.githubusercontent.com/67851701/206601614-09bd63a0-472d-4884-8ff2-f992f9787dba.JPG"> </p>
+
+<ins>**중요한 것은 꺾이지 않는 마음**</ins>
