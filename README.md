@@ -47,6 +47,7 @@ Slack | Notion | W&B | Github
 
 **최종 순위: 전체 13팀 중 4등**
 
-<p> <img src="https://user-images.githubusercontent.com/67851701/206601614-09bd63a0-472d-4884-8ff2-f992f9787dba.JPG"> </p>
+<p> <img src="https://user-images.githubusercontent.com/67851701/207580382-9b6fc39c-08b7-408b-9f11-6c145dc2b023.png"> </p>
+
 
 <ins>**중요한 것은 꺾이지 않는 마음**</ins>
