@@ -14,6 +14,14 @@ pip3 install torch==1.10.0
 pip install torch-scatter==2.0.9
 pip install torch-sparse==0.6.13
 pip install torch-geometric==2.0.4
+
+라이브러리 설치가 잘 안된다면 다음을 시도해보세요: by 권준혁
+print(torch.version.cuda), print(torch.__version__) 확인해서 버전에 맞는 cuda, torch를 설치해주세요.
+
+pip install torch==1.10.0
+pip install torch-sparse==0.6.13 -f https://pytorch-geometric.com/whl/torch-1.10.0+cu102.html
+pip install torch-scatter==2.0.9 -f https://pytorch-geometric.com/whl/torch-1.10.0+cu102.html
+pip install torch-geometric==2.0.4
 ```
 
 
