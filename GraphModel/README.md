@@ -9,7 +9,7 @@
 - 이를 통해 동일한 graph가 다양한 형태의 graph인 것처럼 매번 학습되기 때문에 robust해지고 data augmentation 효과도 확보합니다.
 ## Quadripartite Heterogeneous Graph Propagation for DKT (QHGP) (사용한 모델)
 - ![image](https://user-images.githubusercontent.com/97151660/208238060-6aea02d9-f347-4f91-9a67-f7682313f0c1.png)
-  - figure by **[권준혁의 깃허브](https://github.com/tree-jhk)**
+  - figure by **[권준혁](https://github.com/tree-jhk)**
 - 학생(userID) - 문항(problemID) 간의 관계뿐만 아니라, 학생(userID) - 개념(KnowledgeTagID) 간의 관계와 학생(userID) - 시험지(testID) 간의 관계 그래프도 분명히 존재하기에 이 세 가지 bipartite graph를 연결해서 heterogeneous graph를 구성하고 싶었습니다.
 - Pytorch-geometric 라이브러리의 LightGCN을 직접 불러와서 수정하는 작업을 진행했습니다.
 ## Quadripartite Heterogeneous Graph Propagation with features for DKT
