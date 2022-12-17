@@ -1,4 +1,4 @@
-# GNN을 이용한 DKT - author: [권준혁의 깃허브](https://github.com/tree-jhk)
+# GNN을 이용한 DKT - author: [권준혁 tree-jhk](https://github.com/tree-jhk)
 
 ## LightGCN baseline
 - NGCF에서 Message Passing 과정을 더욱 간단히 해서 경량화를 진행한 LightGCN 모델을 사용했습니다.
