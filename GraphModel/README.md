@@ -4,11 +4,11 @@
 - NGCF에서 Message Passing 과정을 더욱 간단히 해서 경량화를 진행한 LightGCN 모델을 사용했습니다.
 - Pytorch-geometric 라이브러리의 LightGCN을 활용했습니다.
 ## Edge dropout을 적용한 LightGCN
-- ![image](https://user-images.githubusercontent.com/97151660/208237990-ad1f04ff-5311-4737-adaa-2149075adaf3.png)
+![image](https://user-images.githubusercontent.com/97151660/208237990-ad1f04ff-5311-4737-adaa-2149075adaf3.png)
 - Edge dropout: 원본 graph의 node를 삭제하지 않고, edge들을 랜덤하게 삭제해서 매번 새로운 graph로 학습하게 하는 효과를 줍니다.
 - 이를 통해 동일한 graph가 다양한 형태의 graph인 것처럼 매번 학습되기 때문에 robust해지고 data augmentation 효과도 확보합니다.
-## Quadripartite Heterogeneous Graph Propagation for DKT (QHGP) (사용한 모델)
-- ![image](https://user-images.githubusercontent.com/97151660/208238060-6aea02d9-f347-4f91-9a67-f7682313f0c1.png)
+## Quadripartite Heterogeneous Graph Propagation for DKT (QHGP) (제작한 모델)
+![image](https://user-images.githubusercontent.com/97151660/208238060-6aea02d9-f347-4f91-9a67-f7682313f0c1.png)
   - figure by **[권준혁](https://github.com/tree-jhk)**
 - 학생(userID) - 문항(problemID) 간의 관계뿐만 아니라, 학생(userID) - 개념(KnowledgeTagID) 간의 관계와 학생(userID) - 시험지(testID) 간의 관계 그래프도 분명히 존재하기에 이 세 가지 bipartite graph를 연결해서 heterogeneous graph를 구성하고 싶었습니다.
 - Pytorch-geometric 라이브러리의 LightGCN을 직접 불러와서 수정하는 작업을 진행했습니다.
