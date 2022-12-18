@@ -28,7 +28,7 @@ Naver Boostcamp AI Tech 4기 Recsys 12조, **Recommendation is All You Need**
 - **권준혁** : EDA, Catboost, 기존 LightGCN에 3개의 bipartite graph를 통합해서 heterogenous graph model을 구성, LightGCN모델에 feature 정보 embedding, 3개의 bipartite graph를 attention으로 통합
 - **김다은** : SequenceModel(LastQuery)을 중점적으로 연구 및 실험. Sequence Model 및 LGBM에 cross validation(k-fold) 진행, Sequence model에 continuous 피처 적용
 - **류지수** : LightGCN, SequenceModel (Lstmattn) 모델 적용, Hyperparameter Tuning 실험, data augmentation 작성 및 실험
-- **유영서** : Timestamp EDA & FE, Feature selection, SequenceModel 연구 및 실험, Feature에 형식에 따른 성능 개선 연구 및 실험, WandB를 활용하여 모델 성능 개선, Hyperparameter Tuning
+- **유영서** : Timestamp EDA & FE, Feature selection, SequenceModel 연구 및 실험, Feature의 형식에 따른 성능 개선 연구 및 실험, WandB를 활용하여 모델 성능 개선, Hyperparameter Tuning
 
 ## :santa: How we work?
 팀원 간의 원활한 소통을 위해, 다양한 협업 도구를 사용하였습니다!
